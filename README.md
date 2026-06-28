@@ -12,7 +12,9 @@
 ```
 .agents/skills/<name>/     # skill 原件，每个一个目录
 skills-lock.json           # 记录每个 skill 来自哪个 package（source）
+PACKAGES.md                # 已安装的 package 一览（由脚本生成，勿手改）
 scripts/link-skill.sh      # 把 skill / package 软链接进目标项目
+scripts/gen-packages.sh    # 从 lockfile 重新生成 PACKAGES.md
 ```
 
 ## 收集 skill
@@ -24,6 +26,13 @@ npx skills add <package>     # 例如 mattpocock/skills，会装入多个 skill
 ```
 
 装完后 `.agents/skills/` 多出对应目录，`skills-lock.json` 记录来源。
+
+随后跑一下生成器，把已安装 package 一览刷新到 [`PACKAGES.md`](PACKAGES.md)：
+
+```bash
+scripts/gen-packages.sh            # 重新生成 PACKAGES.md
+scripts/gen-packages.sh --check    # 只校验是否最新（适合放进 CI / 提交前检查）
+```
 
 ## 把 skill 装进某个项目
 
@@ -55,13 +64,13 @@ scripts/link-skill.sh [-f] <目标项目路径> <skill或package> [更多...]
 
 ```bash
 # 整个 package 装进写作项目（展开成多个 skill）
-scripts/link-skill.sh ~/GitHub/baoyu-writing mattpocock/skills
+scripts/link-skill.sh ~/GitHub/demo mattpocock/skills
 
 # 只装两个 skill
-scripts/link-skill.sh ~/GitHub/baoyu-writing tdd prototype
+scripts/link-skill.sh ~/GitHub/demo tdd prototype
 
 # 混着传，自动去重
-scripts/link-skill.sh ~/GitHub/baoyu-writing tdd mattpocock/skills
+scripts/link-skill.sh ~/GitHub/demo tdd mattpocock/skills
 ```
 
 ### 行为说明
