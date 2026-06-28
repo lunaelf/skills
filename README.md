@@ -12,13 +12,15 @@
 ```
 .agents/skills/<name>/     # skill 原件，每个一个目录
 skills-lock.json           # 记录每个 skill 来自哪个 package（source）
-PACKAGES.md                # 已安装的 package 一览（由脚本生成，勿手改）
+authored.txt               # 自己写的 skill 名单（提交进仓库）
+PACKAGES.md                # 已安装 package + 自写 skill 一览（由脚本生成，勿手改）
 scripts/link-skill.sh      # 把 skill / package 软链接进目标项目
-scripts/gen-packages.sh    # 从 lockfile 重新生成 PACKAGES.md
+scripts/gen-packages.sh    # 从 lockfile + authored.txt 重新生成 PACKAGES.md
+scripts/mark-authored.sh   # 把自己写的 skill 标记进 authored.txt
 scripts/prune-skills.sh    # 清理目标项目里失效（悬空）的 skill 软链接
 scripts/prune-all.sh       # 对所有登记过的项目批量执行清理
 scripts/register.sh        # 手动把项目登记进 links.txt
-scripts/doctor.sh          # 核对中央仓库目录与 lockfile 是否一致
+scripts/doctor.sh          # 核对中央仓库目录与 lockfile / authored.txt 是否一致
 links.txt                  # 登记链接过的项目（本地、gitignore，绝对路径）
 ```
 
@@ -42,6 +44,20 @@ npx skills add <package>     # 例如 mattpocock/skills，会装入多个 skill
 scripts/gen-packages.sh            # 重新生成 PACKAGES.md
 scripts/gen-packages.sh --check    # 只校验是否最新（适合放进 CI / 提交前检查）
 ```
+
+## 自己写的 skill
+
+自写 skill 同样放在 `.agents/skills/<name>/`，但**不在 `skills-lock.json` 里**（lock 只记录
+`npx skills add` 装的）。链接和清理都照常工作，但有一处要注意：`doctor.sh` 区分不了
+“你自己写的”和“删包后残留的”——两者都是“目录在、lock 没有”。
+
+所以写完一个 skill，把它登记进 `authored.txt`：
+
+```bash
+scripts/mark-authored.sh <name>    # 标记为自写，doctor 不再误报、gen-packages 单列一节
+```
+
+`authored.txt` 会提交进仓库（它是仓库内容的一部分，和本机专属的 `links.txt` 不同）。
 
 ## 把 skill 装进某个项目
 

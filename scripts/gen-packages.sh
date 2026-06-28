@@ -34,6 +34,8 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 lock_file="$repo_root/skills-lock.json"
 out_file="$repo_root/PACKAGES.md"
+src_skills_dir="$repo_root/.agents/skills"
+authored_file="$repo_root/authored.txt"
 
 if [ ! -f "$lock_file" ]; then
   echo "error: lockfile not found: $lock_file" >&2
@@ -96,27 +98,41 @@ render() {
 
   if [ "${#pkgs[@]}" -eq 0 ]; then
     printf '_目前没有已安装的 package。_\n'
-    return
+  else
+    printf '共 %d 个 package。\n' "${#pkgs[@]}"
+    for pkg in "${pkgs[@]}"; do
+      local stype members count
+      stype="$(package_source_type "$pkg")"
+      members=()
+      while IFS= read -r m; do
+        [ -n "$m" ] && members+=("$m")
+      done < <(package_members "$pkg")
+      count="${#members[@]}"
+
+      printf '\n## %s\n\n' "$pkg"
+      printf -- '- 来源类型：%s\n' "$stype"
+      printf -- '- skill（%d 个）：\n' "$count"
+      for m in "${members[@]}"; do
+        printf '  - `%s`\n' "$m"
+      done
+    done
   fi
 
-  printf '共 %d 个 package。\n' "${#pkgs[@]}"
+  # Self-authored skills (listed in authored.txt, present in the store).
+  local authored=()
+  if [ -f "$authored_file" ]; then
+    while IFS= read -r a; do
+      [ -n "$a" ] && [ -d "$src_skills_dir/$a" ] && authored+=("$a")
+    done < <(grep -vE '^[[:space:]]*(#|$)' "$authored_file" 2>/dev/null || true)
+  fi
 
-  for pkg in "${pkgs[@]}"; do
-    local stype members count
-    stype="$(package_source_type "$pkg")"
-    members=()
-    while IFS= read -r m; do
-      [ -n "$m" ] && members+=("$m")
-    done < <(package_members "$pkg")
-    count="${#members[@]}"
-
-    printf '\n## %s\n\n' "$pkg"
-    printf -- '- 来源类型：%s\n' "$stype"
-    printf -- '- skill（%d 个）：\n' "$count"
-    for m in "${members[@]}"; do
-      printf '  - `%s`\n' "$m"
+  if [ "${#authored[@]}" -gt 0 ]; then
+    printf '\n## 自己写的 skill（%d 个）\n\n' "${#authored[@]}"
+    printf -- '- 不来自 package，由本仓库维护。\n\n'
+    for a in "${authored[@]}"; do
+      printf '  - `%s`\n' "$a"
     done
-  done
+  fi
 }
 
 new_content="$(render)"

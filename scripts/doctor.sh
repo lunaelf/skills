@@ -52,20 +52,34 @@ lock_skills() {
   fi
 }
 
+authored_file="$repo_root/authored.txt"
+read_authored() {
+  [ -f "$authored_file" ] || return 0
+  grep -vE '^[[:space:]]*(#|$)' "$authored_file" 2>/dev/null || true
+}
+
 # Sorted name sets.
 locked="$(lock_skills | sort)"
 present="$(cd "$skills_dir" && for d in */; do [ -d "$d" ] && echo "${d%/}"; done | sort)"
+authored="$(read_authored | sort -u)"
 
-orphans="$(comm -13 <(printf '%s\n' "$locked") <(printf '%s\n' "$present"))"
+# A store dir is fine if it's in the lockfile OR marked self-authored.
+not_locked="$(comm -13 <(printf '%s\n' "$locked") <(printf '%s\n' "$present"))"
+orphans="$(comm -13 <(printf '%s\n' "$authored") <(printf '%s\n' "$not_locked"))"
 missing="$(comm -23 <(printf '%s\n' "$locked") <(printf '%s\n' "$present"))"
+# authored.txt names that have no dir (stale entries).
+authored_stale="$(comm -23 <(printf '%s\n' "$authored") <(printf '%s\n' "$present"))"
+# present authored skills (for the ok summary).
+authored_present="$(comm -12 <(printf '%s\n' "$authored") <(printf '%s\n' "$present"))"
 
 problems=0
 
 if [ -n "$orphans" ]; then
   problems=1
-  echo "orphan dirs (in .agents/skills/ but not in lockfile):"
+  echo "orphan dirs (not in lockfile, not marked authored):"
   printf '%s\n' "$orphans" | sed 's/^/  - /'
-  echo "  fix: npx skills remove <name>  (or delete the dir)"
+  echo "  fix: if it's a package leftover, npx skills remove <name> (or delete the dir)"
+  echo "       if you wrote it yourself, scripts/mark-authored.sh <name>"
 fi
 
 if [ -n "$missing" ]; then
@@ -75,9 +89,16 @@ if [ -n "$missing" ]; then
   echo "  fix: npx skills experimental_install"
 fi
 
+if [ -n "$authored_stale" ]; then
+  echo "warn: authored.txt lists skills with no dir (stale entries):"
+  printf '%s\n' "$authored_stale" | sed 's/^/  - /'
+  echo "      remove them from authored.txt"
+fi
+
 if [ "$problems" -eq 0 ]; then
-  count="$(printf '%s\n' "$locked" | grep -c . || true)"
-  echo "ok: store and lockfile agree ($count skills)"
+  lcount="$(printf '%s\n' "$locked" | grep -c . || true)"
+  acount="$(printf '%s\n' "$authored_present" | grep -c . || true)"
+  echo "ok: store and lockfile agree ($lcount installed, $acount self-authored)"
   exit 0
 fi
 
