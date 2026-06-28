@@ -15,6 +15,8 @@ skills-lock.json           # 记录每个 skill 来自哪个 package（source）
 PACKAGES.md                # 已安装的 package 一览（由脚本生成，勿手改）
 scripts/link-skill.sh      # 把 skill / package 软链接进目标项目
 scripts/gen-packages.sh    # 从 lockfile 重新生成 PACKAGES.md
+scripts/prune-skills.sh    # 清理目标项目里失效（悬空）的 skill 软链接
+scripts/doctor.sh          # 核对中央仓库目录与 lockfile 是否一致
 ```
 
 ## 收集 skill
@@ -82,3 +84,29 @@ scripts/link-skill.sh ~/GitHub/demo tdd mattpocock/skills
 - **依赖**：展开 package 需要 `jq` 或 `python3`（任一即可）。
 
 `-h` / `--help` 查看完整用法。
+
+## package 更新后某些 skill 被删了怎么办
+
+`npx skills update` 只更新现有 skill；upstream 删掉的 skill 用 `npx skills remove <skill>`
+显式移除最稳妥。删除会牵连**两层**，分别处理：
+
+**第一层 · 中央仓库**——更新/删除后核对目录与 lockfile 是否一致，再刷新一览：
+
+```bash
+scripts/doctor.sh            # 报告孤儿目录 / 缺失目录，给出修复建议
+scripts/gen-packages.sh      # 核对通过后刷新 PACKAGES.md
+```
+
+- 孤儿目录（目录在、lock 没有）：`npx skills remove <name>` 或直接删目录。
+- 缺失目录（lock 有、目录没了）：`npx skills experimental_install` 恢复。
+
+**第二层 · 下游项目**——被删的 skill 在每个链过它的项目里会变成**悬空软链接**。
+本仓库不记录谁链了什么，所以逐个项目清理：
+
+```bash
+scripts/prune-skills.sh -n <目标项目>   # 先 dry-run 看会删什么
+scripts/prune-skills.sh    <目标项目>   # 删除悬空软链接
+```
+
+只删失效（broken）的软链接，有效链接和真实文件不动；若 `.agents/skills/` 因此清空，
+顺带移除空目录和 `.claude/skills` 入口。
