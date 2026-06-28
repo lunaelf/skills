@@ -11,18 +11,24 @@
 
 ```
 .agents/skills/<name>/     # skill 原件，每个一个目录
-skills-lock.json           # 记录每个 skill 来自哪个 package（source）
+skills-lock.json           # npx skills 装的：记录每个 skill 的 package（source）
 authored.txt               # 自己写的 skill 名单（提交进仓库）
-PACKAGES.md                # 已安装 package + 自写 skill 一览（由脚本生成，勿手改）
+external.json              # GitHub 仓库来的外部 skill 清单（提交进仓库）
+PACKAGES.md                # 三类 skill 一览（由脚本生成，勿手改）
 scripts/link-skill.sh      # 把 skill / package 软链接进目标项目
-scripts/gen-packages.sh    # 从 lockfile + authored.txt 重新生成 PACKAGES.md
+scripts/gen-packages.sh    # 重新生成 PACKAGES.md
 scripts/mark-authored.sh   # 把自己写的 skill 标记进 authored.txt
+scripts/add-external.sh    # 引入 GitHub 仓库里的 skill（clone + 符号链接）
+scripts/sync-external.sh   # 按 external.json 还原 / 更新外部 skill
 scripts/prune-skills.sh    # 清理目标项目里失效（悬空）的 skill 软链接
 scripts/prune-all.sh       # 对所有登记过的项目批量执行清理
 scripts/register.sh        # 手动把项目登记进 links.txt
-scripts/doctor.sh          # 核对中央仓库目录与 lockfile / authored.txt 是否一致
+scripts/doctor.sh          # 核对中央仓库目录与三类清单是否一致
 links.txt                  # 登记链接过的项目（本地、gitignore，绝对路径）
 ```
+
+skill 分三类，各有来源记录：`npx skills add` 装的记在 `skills-lock.json`，
+自己写的记在 `authored.txt`，从 GitHub 仓库引入的记在 `external.json`。
 
 > `link-skill.sh` 每次链接都会把目标项目的绝对路径登记进 `links.txt`，
 > 供 `prune-all.sh` 批量清理。路径是本机专属的，所以这个文件不提交（已 gitignore）。
@@ -58,6 +64,33 @@ scripts/mark-authored.sh <name>    # 标记为自写，doctor 不再误报、gen
 ```
 
 `authored.txt` 会提交进仓库（它是仓库内容的一部分，和本机专属的 `links.txt` 不同）。
+
+## 引入 GitHub 仓库里的 skill（不走 npx）
+
+有些 skill 不在 npx 注册表里，只放在某个 GitHub 仓库。按“clone 到统一目录 + 符号链接”的
+方式引入：仓库 clone 到 `$SKILLS_SRC_DIR`（默认 `~/GitHub`），再把其中的 skill 软链接进
+`.agents/skills/<name>`。
+
+```bash
+scripts/add-external.sh <owner/repo 或 git URL> <仓库内 skill 路径> [name]
+# 例：
+scripts/add-external.sh owner/cool-skills packages/hello hello
+```
+
+它会 clone 仓库、建符号链接、把来源记进 `external.json`，并 gitignore 这个符号链接。
+
+- **为什么 gitignore 链接、却提交 `external.json`**：链接指向 `~/GitHub/...` 的本机绝对路径，
+  提交了换台机器就失效；`external.json` 记录仓库地址 + 子路径，换机器靠它还原（和
+  `skills-lock.json` 思路一致）。
+- **更新**：去 `$SKILLS_SRC_DIR/<repo>` 里 `git pull`，或一键 `scripts/sync-external.sh`。
+- **改了能反哺**：因为是符号链接，直接改的是 clone 里的原件，可在那边提交回上游。
+
+换台机器、或链接 / clone 丢了，按清单还原：
+
+```bash
+scripts/sync-external.sh            # clone 缺失的、pull 更新、重建符号链接
+scripts/sync-external.sh --no-pull  # 只还原，不拉更新
+```
 
 ## 把 skill 装进某个项目
 

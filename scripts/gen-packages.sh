@@ -36,6 +36,9 @@ lock_file="$repo_root/skills-lock.json"
 out_file="$repo_root/PACKAGES.md"
 src_skills_dir="$repo_root/.agents/skills"
 authored_file="$repo_root/authored.txt"
+external_file="$repo_root/external.json"
+# shellcheck source=lib-external.sh
+. "$script_dir/lib-external.sh"
 
 if [ ! -f "$lock_file" ]; then
   echo "error: lockfile not found: $lock_file" >&2
@@ -132,6 +135,29 @@ render() {
     for a in "${authored[@]}"; do
       printf '  - `%s`\n' "$a"
     done
+  fi
+
+  # External GitHub skills (from external.json).
+  local ext_rows ecount
+  ext_rows="$(external_rows "$external_file" 2>/dev/null || true)"
+  ecount="$(printf '%s' "$ext_rows" | grep -c . || true)"
+  if [ "$ecount" -gt 0 ]; then
+    printf '\n## 外部 GitHub skill（%d 个）\n\n' "$ecount"
+    printf -- '- 来自 GitHub 仓库（非 npx），符号链接进来；用 scripts/sync-external.sh 还原/更新。\n\n'
+    # Split on tab manually: `read` with IFS=tab collapses the empty ref field.
+    while IFS= read -r row; do
+      [ -n "$row" ] || continue
+      name="${row%%$'\t'*}"; row="${row#*$'\t'}"
+      repo="${row%%$'\t'*}"; row="${row#*$'\t'}"
+      ref="${row%%$'\t'*}";  path="${row#*$'\t'}"
+      if [ -n "$ref" ]; then
+        printf '  - `%s` — %s @ `%s`（`%s`）\n' "$name" "$repo" "$ref" "$path"
+      else
+        printf '  - `%s` — %s（`%s`）\n' "$name" "$repo" "$path"
+      fi
+    done <<EOF
+$ext_rows
+EOF
   fi
 }
 
