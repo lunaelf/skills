@@ -25,3 +25,9 @@
   - `to-prd`
   - `triage`
   - `writing-great-skills`
+
+## 自己写的 skill（1 个）
+
+- 不来自 package，由本仓库维护。
+
+  - `git-commit`
