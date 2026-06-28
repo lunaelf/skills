@@ -16,8 +16,13 @@ PACKAGES.md                # 已安装的 package 一览（由脚本生成，勿
 scripts/link-skill.sh      # 把 skill / package 软链接进目标项目
 scripts/gen-packages.sh    # 从 lockfile 重新生成 PACKAGES.md
 scripts/prune-skills.sh    # 清理目标项目里失效（悬空）的 skill 软链接
+scripts/prune-all.sh       # 对所有登记过的项目批量执行清理
 scripts/doctor.sh          # 核对中央仓库目录与 lockfile 是否一致
+links.txt                  # 登记链接过的项目（本地、gitignore，绝对路径）
 ```
+
+> `link-skill.sh` 每次链接都会把目标项目的绝对路径登记进 `links.txt`，
+> 供 `prune-all.sh` 批量清理。路径是本机专属的，所以这个文件不提交（已 gitignore）。
 
 ## 收集 skill
 
@@ -110,3 +115,12 @@ scripts/prune-skills.sh    <目标项目>   # 删除悬空软链接
 
 只删失效（broken）的软链接，有效链接和真实文件不动；若 `.agents/skills/` 因此清空，
 顺带移除空目录和 `.claude/skills` 入口。
+
+不想逐个项目跑，就用批量版——它遍历 `links.txt` 里所有登记过的项目：
+
+```bash
+scripts/prune-all.sh -n     # dry-run，看每个项目会删什么
+scripts/prune-all.sh        # 逐个项目清理悬空软链接
+```
+
+已不在磁盘上的项目会自动从 `links.txt` 移除。
