@@ -20,7 +20,7 @@
 #   <target>/.claude/skills         ->  ../.agents/skills
 #
 # Usage:
-#   scripts/link-skill.sh [-f] <target-project-path> <skill-or-package> [<skill-or-package> ...]
+#   scripts/project/link-skill.sh [-f] <target-project-path> <skill-or-package> [<skill-or-package> ...]
 #
 # Options:
 #   -f, --force   Replace an existing skill symlink that points elsewhere.
@@ -51,7 +51,7 @@ fi
 
 # Repo root is the parent of this script's directory.
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 src_skills_dir="$repo_root/.agents/skills"
 lock_file="$repo_root/skills-lock.json"
 
@@ -206,7 +206,7 @@ done
 
 if [ "${#resolved[@]}" -gt 0 ]; then
   ensure_entry_link
-  # Record the target so scripts/prune-all.sh can find it later.
+  # Record the target so scripts/project/prune-all.sh can find it later.
   "$script_dir/register.sh" "$target" || true
 fi
 

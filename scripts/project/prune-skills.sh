@@ -13,7 +13,7 @@
 # .claude/skills entry link and the empty dir are cleaned up too.
 #
 # Usage:
-#   scripts/prune-skills.sh [-n] <target-project-path>
+#   scripts/project/prune-skills.sh [-n] <target-project-path>
 #
 # Options:
 #   -n, --dry-run   Show what would be removed without removing anything.

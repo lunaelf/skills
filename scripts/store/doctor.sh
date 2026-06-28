@@ -14,7 +14,7 @@
 # Exits non-zero if any mismatch is found, so it can gate commits / CI.
 #
 # Usage:
-#   scripts/doctor.sh
+#   scripts/store/doctor.sh
 #
 # Options:
 #   -h, --help    Show this help.
@@ -34,12 +34,12 @@ for arg in "$@"; do
 done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 skills_dir="$repo_root/.agents/skills"
 lock_file="$repo_root/skills-lock.json"
 external_file="$repo_root/external.json"
-# shellcheck source=lib-external.sh
-. "$script_dir/lib-external.sh"
+# shellcheck source=../lib/external.sh
+. "$script_dir/../lib/external.sh"
 
 [ -f "$lock_file" ] || { echo "error: lockfile not found: $lock_file" >&2; exit 1; }
 [ -d "$skills_dir" ] || { echo "error: store not found: $skills_dir" >&2; exit 1; }
@@ -88,8 +88,8 @@ if [ -n "$orphans" ]; then
   echo "orphan dirs (not in lockfile, authored.txt, or external.json):"
   printf '%s\n' "$orphans" | sed 's/^/  - /'
   echo "  fix: package leftover -> npx skills remove <name> (or delete the dir)"
-  echo "       wrote it yourself -> scripts/mark-authored.sh <name>"
-  echo "       from a GitHub repo -> scripts/add-external.sh <repo> <path> <name>"
+  echo "       wrote it yourself -> scripts/store/mark-authored.sh <name>"
+  echo "       from a GitHub repo -> scripts/store/add-external.sh <repo> <path> <name>"
 fi
 
 if [ -n "$missing" ]; then
@@ -103,7 +103,7 @@ if [ -n "$missing_external" ]; then
   problems=1
   echo "missing external skills (in external.json but no resolvable dir):"
   printf '%s\n' "$missing_external" | sed 's/^/  - /'
-  echo "  fix: scripts/sync-external.sh"
+  echo "  fix: scripts/store/sync-external.sh"
 fi
 
 if [ -n "$authored_stale" ]; then
@@ -126,5 +126,5 @@ if [ "$problems" -eq 0 ]; then
 fi
 
 echo
-echo "after fixing, run scripts/gen-packages.sh to refresh PACKAGES.md"
+echo "after fixing, run scripts/store/gen-packages.sh to refresh PACKAGES.md"
 exit 1

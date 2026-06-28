@@ -11,7 +11,7 @@
 # machine-specific links.txt). Adding is idempotent and preserves comments.
 #
 # Usage:
-#   scripts/mark-authored.sh <skill-name> [<skill-name> ...]
+#   scripts/store/mark-authored.sh <skill-name> [<skill-name> ...]
 #
 # Options:
 #   -h, --help    Show this help.
@@ -38,7 +38,7 @@ if [ "${#positional[@]}" -lt 1 ]; then
 fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 src_skills_dir="$repo_root/.agents/skills"
 authored="$repo_root/authored.txt"
 touch "$authored"

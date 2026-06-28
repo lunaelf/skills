@@ -10,7 +10,7 @@
 # (gitignored). Adding is idempotent and the file is kept sorted & unique.
 #
 # Usage:
-#   scripts/register.sh <project-path> [<project-path> ...]
+#   scripts/project/register.sh <project-path> [<project-path> ...]
 #
 # Options:
 #   -h, --help    Show this help.
@@ -37,7 +37,7 @@ if [ "${#positional[@]}" -lt 1 ]; then
 fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 registry="$repo_root/links.txt"
 touch "$registry"
 

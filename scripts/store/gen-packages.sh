@@ -8,7 +8,7 @@
 # which skills each one brought in.
 #
 # Run it after `npx skills add <package>` (or any change to the lockfile):
-#   scripts/gen-packages.sh
+#   scripts/store/gen-packages.sh
 #
 # Options:
 #   --check       Don't write; exit non-zero if PACKAGES.md is out of date.
@@ -31,14 +31,14 @@ for arg in "$@"; do
 done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 lock_file="$repo_root/skills-lock.json"
 out_file="$repo_root/PACKAGES.md"
 src_skills_dir="$repo_root/.agents/skills"
 authored_file="$repo_root/authored.txt"
 external_file="$repo_root/external.json"
-# shellcheck source=lib-external.sh
-. "$script_dir/lib-external.sh"
+# shellcheck source=../lib/external.sh
+. "$script_dir/../lib/external.sh"
 
 if [ ! -f "$lock_file" ]; then
   echo "error: lockfile not found: $lock_file" >&2
@@ -92,7 +92,7 @@ print(ts[0] if ts else "unknown")' \
 
 render() {
   printf '# 已安装的 package\n\n'
-  printf '> 本文件由 `scripts/gen-packages.sh` 从 `skills-lock.json` 生成，请勿手动编辑。\n\n'
+  printf '> 本文件由 `scripts/store/gen-packages.sh` 从 `skills-lock.json` 生成，请勿手动编辑。\n\n'
 
   local pkgs=()
   while IFS= read -r p; do
@@ -143,7 +143,7 @@ render() {
   ecount="$(printf '%s' "$ext_rows" | grep -c . || true)"
   if [ "$ecount" -gt 0 ]; then
     printf '\n## 外部 GitHub skill（%d 个）\n\n' "$ecount"
-    printf -- '- 来自 GitHub 仓库（非 npx），符号链接进来；用 scripts/sync-external.sh 还原/更新。\n\n'
+    printf -- '- 来自 GitHub 仓库（非 npx），符号链接进来；用 scripts/store/sync-external.sh 还原/更新。\n\n'
     # Split on tab manually: `read` with IFS=tab collapses the empty ref field.
     while IFS= read -r row; do
       [ -n "$row" ] || continue
@@ -168,7 +168,7 @@ if [ "$check" -eq 1 ]; then
     echo "PACKAGES.md is up to date"
     exit 0
   fi
-  echo "error: PACKAGES.md is out of date; run scripts/gen-packages.sh" >&2
+  echo "error: PACKAGES.md is out of date; run scripts/store/gen-packages.sh" >&2
   exit 1
 fi
 

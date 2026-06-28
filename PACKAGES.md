@@ -1,6 +1,6 @@
 # 已安装的 package
 
-> 本文件由 `scripts/gen-packages.sh` 从 `skills-lock.json` 生成，请勿手动编辑。
+> 本文件由 `scripts/store/gen-packages.sh` 从 `skills-lock.json` 生成，请勿手动编辑。
 
 共 1 个 package。
 
@@ -34,6 +34,6 @@
 
 ## 外部 GitHub skill（1 个）
 
-- 来自 GitHub 仓库（非 npx），符号链接进来；用 scripts/sync-external.sh 还原/更新。
+- 来自 GitHub 仓库（非 npx），符号链接进来；用 scripts/store/sync-external.sh 还原/更新。
 
   - `hv-analysis` — https://github.com/KKKKhazix/khazix-skills.git（`hv-analysis`）

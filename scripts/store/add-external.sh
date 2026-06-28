@@ -6,10 +6,10 @@
 # (root = $SKILLS_CODE_ROOT, default ~/Documents/code), symlinks the skill
 # into .agents/skills/<name>, records it in external.json (committed), and
 # gitignores the machine-specific symlink. Update later with `git pull` in the
-# clone, or restore on another machine with scripts/sync-external.sh.
+# clone, or restore on another machine with scripts/store/sync-external.sh.
 #
 # Usage:
-#   scripts/add-external.sh [-f] [-r <ref>] <repo> <skill-path> [<name>]
+#   scripts/store/add-external.sh [-f] [-r <ref>] <repo> <skill-path> [<name>]
 #
 #   <repo>        owner/repo, https URL, or git@ SSH URL
 #   <skill-path>  path to the skill dir within the repo (the dir with SKILL.md)
@@ -23,9 +23,9 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
-# shellcheck source=lib-external.sh
-. "$script_dir/lib-external.sh"
+repo_root="$(cd "$script_dir/../.." && pwd)"
+# shellcheck source=../lib/external.sh
+. "$script_dir/../lib/external.sh"
 manifest="$repo_root/external.json"
 
 usage() { sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }

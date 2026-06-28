@@ -10,7 +10,7 @@
 # Projects whose directory no longer exists are dropped from the registry.
 #
 # Usage:
-#   scripts/prune-all.sh [-n]
+#   scripts/project/prune-all.sh [-n]
 #
 # Options:
 #   -n, --dry-run   Pass through to prune-skills.sh; don't remove links or
@@ -34,7 +34,7 @@ for arg in "$@"; do
 done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 registry="$repo_root/links.txt"
 prune="$script_dir/prune-skills.sh"
 

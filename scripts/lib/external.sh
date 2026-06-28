@@ -137,8 +137,8 @@ ensure_gitignore() {
   local root="$1" pat="$2" gi="$1/.gitignore"
   touch "$gi"
   grep -qxF "$pat" "$gi" && return 0
-  if ! grep -qxF "# External skill symlinks (restore via scripts/sync-external.sh)" "$gi"; then
-    printf '\n# External skill symlinks (restore via scripts/sync-external.sh)\n' >> "$gi"
+  if ! grep -qxF "# External skill symlinks (restore via scripts/store/sync-external.sh)" "$gi"; then
+    printf '\n# External skill symlinks (restore via scripts/store/sync-external.sh)\n' >> "$gi"
   fi
   printf '%s\n' "$pat" >> "$gi"
 }

@@ -9,7 +9,7 @@
 # external skills, or any time to update them all at once.
 #
 # Usage:
-#   scripts/sync-external.sh [--no-pull]
+#   scripts/store/sync-external.sh [--no-pull]
 #
 # Options:
 #   --no-pull     Clone if missing and fix symlinks, but don't pull updates.
@@ -18,9 +18,9 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
-# shellcheck source=lib-external.sh
-. "$script_dir/lib-external.sh"
+repo_root="$(cd "$script_dir/../.." && pwd)"
+# shellcheck source=../lib/external.sh
+. "$script_dir/../lib/external.sh"
 manifest="$repo_root/external.json"
 
 usage() { sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
