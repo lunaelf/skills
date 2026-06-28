@@ -58,9 +58,11 @@ read_authored() {
   grep -vE '^[[:space:]]*(#|$)' "$authored_file" 2>/dev/null || true
 }
 
-# Sorted name sets.
+# Sorted name sets. A dir is a skill only if it contains SKILL.md; other dirs
+# (dev workspaces, scratch) are ignored.
 locked="$(lock_skills | sort)"
-present="$(cd "$skills_dir" && for d in */; do [ -d "$d" ] && echo "${d%/}"; done | sort)"
+present="$(cd "$skills_dir" && for d in */; do [ -f "$d/SKILL.md" ] && echo "${d%/}" || :; done | sort)"
+non_skill="$(cd "$skills_dir" && for d in */; do { [ -d "$d" ] && [ ! -f "$d/SKILL.md" ] && echo "${d%/}"; } || :; done | sort)"
 authored="$(read_authored | sort -u)"
 
 # A store dir is fine if it's in the lockfile OR marked self-authored.
@@ -93,6 +95,11 @@ if [ -n "$authored_stale" ]; then
   echo "warn: authored.txt lists skills with no dir (stale entries):"
   printf '%s\n' "$authored_stale" | sed 's/^/  - /'
   echo "      remove them from authored.txt"
+fi
+
+if [ -n "$non_skill" ]; then
+  echo "info: ignored non-skill dirs (no SKILL.md):"
+  printf '%s\n' "$non_skill" | sed 's/^/  - /'
 fi
 
 if [ "$problems" -eq 0 ]; then

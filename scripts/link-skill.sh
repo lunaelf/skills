@@ -115,6 +115,11 @@ link_one() {
     return 1
   fi
 
+  if [ ! -f "$src/SKILL.md" ]; then
+    echo "error: not a skill (no SKILL.md): $name" >&2
+    return 1
+  fi
+
   mkdir -p "$target/.agents/skills"
 
   if [ -L "$dest" ]; then
