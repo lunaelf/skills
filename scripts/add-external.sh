@@ -2,7 +2,8 @@
 #
 # add-external.sh — bring a GitHub-hosted (non-npx) skill into the store.
 #
-# Clones the repo to $SKILLS_SRC_DIR (default ~/GitHub), symlinks the skill
+# Clones the repo into the local code tree at <root>/<host>/<owner>/<repo>
+# (root = $SKILLS_CODE_ROOT, default ~/Documents/code), symlinks the skill
 # into .agents/skills/<name>, records it in external.json (committed), and
 # gitignores the machine-specific symlink. Update later with `git pull` in the
 # clone, or restore on another machine with scripts/sync-external.sh.
@@ -51,12 +52,12 @@ repo="${positional[0]}"
 skill_path="${positional[1]}"
 name="${positional[2]:-$(basename "$skill_path")}"
 
-read -r url _dirname < <(normalize_repo "$repo")
+url="$(repo_url "$repo")"
 clonedir="$(clone_dir_for "$repo")"
 
 if [ ! -d "$clonedir/.git" ]; then
   echo "cloning $url -> $clonedir"
-  mkdir -p "$SKILLS_SRC_DIR"
+  mkdir -p "$(dirname "$clonedir")"
   git clone "$url" "$clonedir"
 else
   echo "using existing clone: $clonedir"

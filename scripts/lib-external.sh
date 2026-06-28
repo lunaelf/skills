@@ -3,32 +3,59 @@
 # lib-external.sh — shared helpers for GitHub-hosted (non-npx) skills.
 #
 # Sourced by add-external.sh / sync-external.sh / doctor.sh / gen-packages.sh.
-# These skills are cloned to $SKILLS_SRC_DIR and symlinked into the store; the
-# symlink is machine-specific (gitignored) while external.json (committed)
-# records the repo + path so any machine can restore them.
+# These skills are cloned into the local code tree (see SKILLS_CODE_ROOT) and
+# symlinked into the store; the symlink is machine-specific (gitignored) while
+# external.json (committed) records the repo + path so any machine can restore.
 
-# Base dir holding clones of external skill repos (override with SKILLS_SRC_DIR).
-SKILLS_SRC_DIR="${SKILLS_SRC_DIR:-$HOME/GitHub}"
+# Root of the local code tree, laid out as <root>/<host>/<owner>/<repo>
+# (the ghq / go-style convention). Override with SKILLS_CODE_ROOT.
+SKILLS_CODE_ROOT="${SKILLS_CODE_ROOT:-$HOME/Documents/code}"
 
-# normalize_repo <repo> -> prints "<clone-url>\t<clone-dirname>"
-# Accepts owner/repo, https URL, or git@ SSH form.
-normalize_repo() {
-  local repo="$1" url base
+# parse_repo <repo> -> prints "<clone-url>\t<host>\t<owner>\t<repo>"
+# Accepts owner/repo shorthand, https URL, or git@ SSH form. For URL schemes
+# without a host/owner (e.g. file://), host=local owner=_ as a fallback.
+parse_repo() {
+  local repo="$1" url host path owner name rest
   case "$repo" in
-    *://* | git@*) url="$repo" ;;                       # any scheme:// or ssh
-    */*)           url="https://github.com/$repo.git" ;; # owner/repo shorthand
+    git@*)                                  # git@host:owner/repo(.git)
+      url="$repo"
+      host="${repo#git@}"; host="${host%%:*}"
+      path="${repo#*:}"
+      ;;
+    ssh://*|http://*|https://*|git://*)      # scheme://[user@]host/owner/repo
+      url="$repo"
+      rest="${repo#*://}"; rest="${rest#*@}"
+      host="${rest%%/*}"
+      path="${rest#*/}"
+      ;;
+    *://*)                                   # other schemes (file://, ...)
+      url="$repo"; host="local"; path="" ;;
+    */*)                                     # owner/repo shorthand -> github.com
+      url="https://github.com/$repo.git"; host="github.com"; path="$repo" ;;
     *) echo "error: unrecognized repo (want owner/repo or a git URL): $repo" >&2; return 1 ;;
   esac
-  base="${repo##*/}"      # last path component
-  base="${base%.git}"
-  printf '%s\t%s\n' "$url" "$base"
+
+  path="${path%.git}"; path="${path%/}"
+  if [ -n "$path" ]; then
+    owner="${path%%/*}"
+    name="${path##*/}"
+  fi
+  [ -n "${owner:-}" ] || owner="_"
+  if [ -z "${name:-}" ]; then name="${repo##*/}"; name="${name%.git}"; fi
+  printf '%s\t%s\t%s\t%s\n' "$url" "$host" "$owner" "$name"
 }
 
+# repo_url <repo> -> clone URL only
+repo_url() { parse_repo "$1" | cut -f1; }
+
+# clone_dir_for <repo> -> absolute clone path <root>/<host>/<owner>/<repo>
 clone_dir_for() {
-  # clone_dir_for <repo> -> absolute clone path
-  local dirname
-  dirname="$(normalize_repo "$1" | cut -f2)"
-  printf '%s/%s\n' "$SKILLS_SRC_DIR" "$dirname"
+  local f host owner name
+  f="$(parse_repo "$1")" || return 1
+  host="$(printf '%s' "$f" | cut -f2)"
+  owner="$(printf '%s' "$f" | cut -f3)"
+  name="$(printf '%s' "$f" | cut -f4)"
+  printf '%s/%s/%s/%s\n' "$SKILLS_CODE_ROOT" "$host" "$owner" "$name"
 }
 
 # external_names <manifest> -> skill names, one per line

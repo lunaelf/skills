@@ -2,8 +2,9 @@
 #
 # sync-external.sh — restore/update external skills from external.json.
 #
-# For every skill recorded in external.json: ensure its repo is cloned to
-# $SKILLS_SRC_DIR, pull the latest (unless --no-pull), and (re)create the
+# For every skill recorded in external.json: ensure its repo is cloned into the
+# local code tree (see SKILLS_CODE_ROOT), pull the latest (unless --no-pull),
+# and (re)create the
 # symlink into .agents/skills/<name>. Run this on a fresh machine to restore
 # external skills, or any time to update them all at once.
 #
@@ -50,11 +51,11 @@ while IFS= read -r row; do
   echo "=== $name ($repo) ==="
 
   clonedir="$(clone_dir_for "$repo")"
-  url="$(normalize_repo "$repo" | cut -f1)"
+  url="$(repo_url "$repo")"
 
   if [ ! -d "$clonedir/.git" ]; then
     echo "cloning $url -> $clonedir"
-    mkdir -p "$SKILLS_SRC_DIR"
+    mkdir -p "$(dirname "$clonedir")"
     if ! git clone "$url" "$clonedir"; then
       echo "warn: clone failed for $name" >&2; failed=1; continue
     fi

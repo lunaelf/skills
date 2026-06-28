@@ -67,22 +67,24 @@ scripts/mark-authored.sh <name>    # 标记为自写，doctor 不再误报、gen
 
 ## 引入 GitHub 仓库里的 skill（不走 npx）
 
-有些 skill 不在 npx 注册表里，只放在某个 GitHub 仓库。按“clone 到统一目录 + 符号链接”的
-方式引入：仓库 clone 到 `$SKILLS_SRC_DIR`（默认 `~/GitHub`），再把其中的 skill 软链接进
-`.agents/skills/<name>`。
+有些 skill 不在 npx 注册表里，只放在某个 GitHub 仓库。按“clone 到本地代码树 + 符号链接”的
+方式引入：仓库按 `<root>/<host>/<owner>/<repo>` 的规则 clone（ghq / go 风格，root 默认
+`~/Documents/code`，即 `~/Documents/code/github.com/<org>/<repo>`），再把其中的 skill 软链接进
+`.agents/skills/<name>`。root 用环境变量 `SKILLS_CODE_ROOT` 覆盖。
 
 ```bash
 scripts/add-external.sh <owner/repo 或 git URL> <仓库内 skill 路径> [name]
-# 例：
+# 例（clone 到 ~/Documents/code/github.com/owner/cool-skills）：
 scripts/add-external.sh owner/cool-skills packages/hello hello
 ```
 
 它会 clone 仓库、建符号链接、把来源记进 `external.json`，并 gitignore 这个符号链接。
 
-- **为什么 gitignore 链接、却提交 `external.json`**：链接指向 `~/GitHub/...` 的本机绝对路径，
-  提交了换台机器就失效；`external.json` 记录仓库地址 + 子路径，换机器靠它还原（和
-  `skills-lock.json` 思路一致）。
-- **更新**：去 `$SKILLS_SRC_DIR/<repo>` 里 `git pull`，或一键 `scripts/sync-external.sh`。
+- **为什么 gitignore 链接、却提交 `external.json`**：链接指向本机绝对路径
+  （`~/Documents/code/...`），提交了换台机器就失效；`external.json` 记录仓库地址 + 子路径，
+  换机器靠它还原（和 `skills-lock.json` 思路一致）。
+- **更新**：去 `$SKILLS_CODE_ROOT/<host>/<owner>/<repo>` 里 `git pull`，或一键
+  `scripts/sync-external.sh`。
 - **改了能反哺**：因为是符号链接，直接改的是 clone 里的原件，可在那边提交回上游。
 
 换台机器、或链接 / clone 丢了，按清单还原：
@@ -122,13 +124,13 @@ scripts/link-skill.sh [-f] <目标项目路径> <skill或package> [更多...]
 
 ```bash
 # 整个 package 装进写作项目（展开成多个 skill）
-scripts/link-skill.sh ~/GitHub/demo mattpocock/skills
+scripts/link-skill.sh ~/Documents/code/github.com/me/demo mattpocock/skills
 
 # 只装两个 skill
-scripts/link-skill.sh ~/GitHub/demo tdd prototype
+scripts/link-skill.sh ~/Documents/code/github.com/me/demo tdd prototype
 
 # 混着传，自动去重
-scripts/link-skill.sh ~/GitHub/demo tdd mattpocock/skills
+scripts/link-skill.sh ~/Documents/code/github.com/me/demo tdd mattpocock/skills
 ```
 
 ### 行为说明
