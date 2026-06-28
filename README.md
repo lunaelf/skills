@@ -17,12 +17,14 @@ scripts/link-skill.sh      # 把 skill / package 软链接进目标项目
 scripts/gen-packages.sh    # 从 lockfile 重新生成 PACKAGES.md
 scripts/prune-skills.sh    # 清理目标项目里失效（悬空）的 skill 软链接
 scripts/prune-all.sh       # 对所有登记过的项目批量执行清理
+scripts/register.sh        # 手动把项目登记进 links.txt
 scripts/doctor.sh          # 核对中央仓库目录与 lockfile 是否一致
 links.txt                  # 登记链接过的项目（本地、gitignore，绝对路径）
 ```
 
 > `link-skill.sh` 每次链接都会把目标项目的绝对路径登记进 `links.txt`，
 > 供 `prune-all.sh` 批量清理。路径是本机专属的，所以这个文件不提交（已 gitignore）。
+> 早先手动建过软链接、没经过 `link-skill.sh` 的项目，用 `scripts/register.sh <项目>` 补登。
 
 ## 收集 skill
 

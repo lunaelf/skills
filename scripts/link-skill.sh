@@ -201,15 +201,8 @@ done
 
 if [ "${#resolved[@]}" -gt 0 ]; then
   ensure_entry_link
-  # Register the target so scripts/prune-all.sh can find it later. The registry
-  # holds machine-specific absolute paths, so it stays local (gitignored).
-  registry="$repo_root/links.txt"
-  touch "$registry"
-  if ! grep -qxF "$target" "$registry"; then
-    echo "$target" >> "$registry"
-    sort -u "$registry" -o "$registry"
-    echo "registered project in links.txt: $target"
-  fi
+  # Record the target so scripts/prune-all.sh can find it later.
+  "$script_dir/register.sh" "$target" || true
 fi
 
 exit "$failed"
