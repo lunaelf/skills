@@ -31,3 +31,9 @@
 - 不来自 package，由本仓库维护。
 
   - `git-commit`
+
+## 外部 GitHub skill（1 个）
+
+- 来自 GitHub 仓库（非 npx），符号链接进来；用 scripts/sync-external.sh 还原/更新。
+
+  - `hv-analysis` — https://github.com/KKKKhazix/khazix-skills.git（`hv-analysis`）

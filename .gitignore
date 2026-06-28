@@ -21,3 +21,6 @@ yarn-error.log*
 .idea/
 *.swp
 *~
+
+# External skill symlinks (restore via scripts/sync-external.sh)
+/.agents/skills/hv-analysis

@@ -1,4 +1,10 @@
 {
   "version": 1,
-  "skills": {}
+  "skills": {
+    "hv-analysis": {
+      "repo": "https://github.com/KKKKhazix/khazix-skills.git",
+      "ref": "",
+      "skillPath": "hv-analysis"
+    }
+  }
 }
