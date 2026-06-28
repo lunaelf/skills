@@ -54,6 +54,8 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
 src_skills_dir="$repo_root/.agents/skills"
 lock_file="$repo_root/skills-lock.json"
+# shellcheck source=../lib/lock.sh
+. "$script_dir/../lib/lock.sh"
 
 raw_target="${positional[0]}"
 inputs=("${positional[@]:1}")
@@ -69,39 +71,6 @@ if [ "$target" = "$repo_root" ]; then
   echo "error: target is the skills repo itself; nothing to do" >&2
   exit 1
 fi
-
-# --- lockfile queries (jq preferred, python3 fallback) ----------------------
-
-query_lock() {
-  # $1: jq filter, $2: python snippet; both read $lock_file.
-  if command -v jq >/dev/null 2>&1; then
-    jq -r "$1" "$lock_file"
-  elif command -v python3 >/dev/null 2>&1; then
-    python3 -c "$2" "$lock_file" "${3:-}"
-  else
-    echo "error: need jq or python3 to read $lock_file" >&2
-    return 2
-  fi
-}
-
-package_members() {
-  # Skill names whose source == $1, in lockfile order.
-  local pkg="$1"
-  query_lock \
-    "$(printf '.skills | to_entries[] | select(.value.source=="%s") | .key' "$pkg")" \
-    'import json,sys
-d=json.load(open(sys.argv[1]))
-[print(n) for n,m in d.get("skills",{}).items() if m.get("source")==sys.argv[2]]' \
-    "$pkg"
-}
-
-list_packages() {
-  query_lock \
-    '[.skills[].source] | unique[]' \
-    'import json,sys
-d=json.load(open(sys.argv[1]))
-[print(s) for s in sorted({m.get("source") for m in d.get("skills",{}).values() if m.get("source")})]'
-}
 
 # --- linking ----------------------------------------------------------------
 
@@ -182,7 +151,7 @@ for input in "${inputs[@]}"; do
   members=()
   while IFS= read -r m; do
     [ -n "$m" ] && members+=("$m")
-  done < <(package_members "$input")
+  done < <(lock_package_members "$lock_file" "$input")
 
   if [ "${#members[@]}" -gt 0 ]; then
     echo "package '$input' -> ${#members[@]} skills"
@@ -192,9 +161,9 @@ for input in "${inputs[@]}"; do
   else
     echo "error: '$input' is neither a skill nor a known package" >&2
     echo "available skills:" >&2
-    (cd "$src_skills_dir" && ls -1) | sed 's/^/  - /' >&2
+    (cd "$src_skills_dir" && for d in */; do [ -f "$d/SKILL.md" ] && echo "${d%/}" || :; done) | sed 's/^/  - /' >&2
     echo "available packages:" >&2
-    list_packages | sed 's/^/  - /' >&2
+    lock_packages "$lock_file" | sed 's/^/  - /' >&2
     failed=1
   fi
 done

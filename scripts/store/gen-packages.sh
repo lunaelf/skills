@@ -39,54 +39,13 @@ authored_file="$repo_root/authored.txt"
 external_file="$repo_root/external.json"
 # shellcheck source=../lib/external.sh
 . "$script_dir/../lib/external.sh"
+# shellcheck source=../lib/lock.sh
+. "$script_dir/../lib/lock.sh"
 
 if [ ! -f "$lock_file" ]; then
   echo "error: lockfile not found: $lock_file" >&2
   exit 1
 fi
-
-# --- lockfile queries (jq preferred, python3 fallback) ----------------------
-
-query_lock() {
-  # $1: jq filter, $2: python snippet; both read $lock_file (+ optional $3 arg).
-  if command -v jq >/dev/null 2>&1; then
-    jq -r "$1" "$lock_file"
-  elif command -v python3 >/dev/null 2>&1; then
-    python3 -c "$2" "$lock_file" "${3:-}"
-  else
-    echo "error: need jq or python3 to read $lock_file" >&2
-    return 2
-  fi
-}
-
-list_packages() {
-  query_lock \
-    '[.skills[].source] | unique[]' \
-    'import json,sys
-d=json.load(open(sys.argv[1]))
-[print(s) for s in sorted({m.get("source") for m in d.get("skills",{}).values() if m.get("source")})]'
-}
-
-package_members() {
-  local pkg="$1"
-  query_lock \
-    "$(printf '.skills | to_entries[] | select(.value.source=="%s") | .key' "$pkg")" \
-    'import json,sys
-d=json.load(open(sys.argv[1]))
-[print(n) for n,m in d.get("skills",{}).items() if m.get("source")==sys.argv[2]]' \
-    "$pkg"
-}
-
-package_source_type() {
-  local pkg="$1"
-  query_lock \
-    "$(printf '[.skills[] | select(.source=="%s") | .sourceType] | first // "unknown"' "$pkg")" \
-    'import json,sys
-d=json.load(open(sys.argv[1]))
-ts=[m.get("sourceType","unknown") for m in d.get("skills",{}).values() if m.get("source")==sys.argv[2]]
-print(ts[0] if ts else "unknown")' \
-    "$pkg"
-}
 
 # --- render markdown --------------------------------------------------------
 
@@ -97,7 +56,7 @@ render() {
   local pkgs=()
   while IFS= read -r p; do
     [ -n "$p" ] && pkgs+=("$p")
-  done < <(list_packages)
+  done < <(lock_packages "$lock_file")
 
   if [ "${#pkgs[@]}" -eq 0 ]; then
     printf '_目前没有已安装的 package。_\n'
@@ -105,11 +64,11 @@ render() {
     printf '共 %d 个 package。\n' "${#pkgs[@]}"
     for pkg in "${pkgs[@]}"; do
       local stype members count
-      stype="$(package_source_type "$pkg")"
+      stype="$(lock_package_source_type "$lock_file" "$pkg")"
       members=()
       while IFS= read -r m; do
         [ -n "$m" ] && members+=("$m")
-      done < <(package_members "$pkg")
+      done < <(lock_package_members "$lock_file" "$pkg")
       count="${#members[@]}"
 
       printf '\n## %s\n\n' "$pkg"
@@ -123,11 +82,9 @@ render() {
 
   # Self-authored skills (listed in authored.txt, present in the store).
   local authored=()
-  if [ -f "$authored_file" ]; then
-    while IFS= read -r a; do
-      [ -n "$a" ] && [ -d "$src_skills_dir/$a" ] && authored+=("$a")
-    done < <(grep -vE '^[[:space:]]*(#|$)' "$authored_file" 2>/dev/null || true)
-  fi
+  while IFS= read -r a; do
+    [ -n "$a" ] && [ -d "$src_skills_dir/$a" ] && authored+=("$a")
+  done < <(read_authored "$authored_file")
 
   if [ "${#authored[@]}" -gt 0 ]; then
     printf '\n## 自己写的 skill（%d 个）\n\n' "${#authored[@]}"

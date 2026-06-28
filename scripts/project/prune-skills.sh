@@ -78,7 +78,9 @@ fi
 # If .agents/skills is now empty, clean up the dir and the entry link.
 remaining=0
 for entry in "$skills_dir"/*; do
-  [ -e "$entry" ] || [ -L "$entry" ] && remaining=$((remaining + 1))
+  if [ -e "$entry" ] || [ -L "$entry" ]; then
+    remaining=$((remaining + 1))
+  fi
 done
 
 if [ "$remaining" -eq 0 ]; then

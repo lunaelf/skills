@@ -49,14 +49,16 @@ All scripts take `-h/--help`. Paths assume repo root as CWD.
 
 ```bash
 # Inventory / health
-scripts/store/doctor.sh                 # check store vs all 3 manifests; exit!=0 on mismatch (CI-able)
+scripts/check.sh                        # doctor + gen --check; CI / pre-commit gate
+scripts/store/doctor.sh                 # check store vs all 3 manifests; exit!=0 on mismatch
 scripts/store/gen-packages.sh           # regenerate PACKAGES.md from the manifests
 scripts/store/gen-packages.sh --check   # verify PACKAGES.md is current without writing
 
-# Add skills to the store
+# Add / remove skills in the store
 npx skills add <owner/repo>             # npm-registry skills -> skills-lock.json
 scripts/store/mark-authored.sh <name>   # record a self-written skill in authored.txt
 scripts/store/add-external.sh <owner/repo|url> <skill-path-in-repo> [name]   # clone+symlink a GitHub skill
+scripts/store/remove-external.sh <name> # undo add-external (symlink + external.json + gitignore)
 scripts/store/sync-external.sh [--no-pull]   # restore/update all external skills from external.json
 
 # Link skills INTO a target project (downstream)
@@ -71,8 +73,10 @@ After any change to the store (npx add/remove, authoring, external add), run `do
 
 ## Working on the scripts
 
-- `scripts/lib/external.sh` is sourced (not executed) by the `store/` scripts; it holds repo-URL
-  parsing (`parse_repo`/`clone_dir_for`), `external.json` read/write helpers, and `ensure_gitignore`.
+- `scripts/lib/` holds sourced (not executed) helpers. `lock.sh` has the `skills-lock.json` /
+  `authored.txt` queries (`lock_*`, `read_authored`); `external.sh` has repo-URL parsing
+  (`parse_repo`/`clone_dir_for`), `external.json` read/write, and `ensure_gitignore`/`gitignore_remove`.
+  Reuse these rather than re-inlining a jq filter — that duplication was the point of the lib.
   JSON is read/written with `jq` when available, falling back to `python3`.
 - Each command script resolves `repo_root` by going **two levels up** from its own dir
   (`scripts/<group>/x.sh`). Cross-script calls use `$script_dir/sibling.sh` (e.g. `link-skill.sh`

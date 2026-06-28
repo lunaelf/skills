@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# lib-external.sh — shared helpers for GitHub-hosted (non-npx) skills.
+# external.sh — shared helpers for GitHub-hosted (non-npx) skills.
 #
-# Sourced by add-external.sh / sync-external.sh / doctor.sh / gen-packages.sh.
+# Sourced by add-external.sh / sync-external.sh / remove-external.sh /
+# doctor.sh / gen-packages.sh.
 # These skills are cloned into the local code tree (see SKILLS_CODE_ROOT) and
 # symlinked into the store; the symlink is machine-specific (gitignored) while
 # external.json (committed) records the repo + path so any machine can restore.
@@ -132,13 +133,27 @@ PY
   fi
 }
 
+_GITIGNORE_EXTERNAL_HEADER="# External skill symlinks (restore via scripts/store/sync-external.sh)"
+
 # ensure_gitignore <repo_root> <pattern> — append pattern under a known header.
 ensure_gitignore() {
-  local root="$1" pat="$2" gi="$1/.gitignore"
+  local pat="$2" gi="$1/.gitignore"
   touch "$gi"
   grep -qxF "$pat" "$gi" && return 0
-  if ! grep -qxF "# External skill symlinks (restore via scripts/store/sync-external.sh)" "$gi"; then
-    printf '\n# External skill symlinks (restore via scripts/store/sync-external.sh)\n' >> "$gi"
-  fi
+  grep -qxF "$_GITIGNORE_EXTERNAL_HEADER" "$gi" || printf '\n%s\n' "$_GITIGNORE_EXTERNAL_HEADER" >> "$gi"
   printf '%s\n' "$pat" >> "$gi"
+}
+
+# gitignore_remove <repo_root> <pattern> — drop pattern; drop the header too if
+# no external entries remain.
+gitignore_remove() {
+  local pat="$2" gi="$1/.gitignore" tmp
+  [ -f "$gi" ] || return 0
+  tmp="$(mktemp)"
+  grep -vxF "$pat" "$gi" > "$tmp" || true
+  if ! grep -qE '^/\.agents/skills/' "$tmp"; then
+    grep -vxF "$_GITIGNORE_EXTERNAL_HEADER" "$tmp" > "$tmp.2" || true
+    mv "$tmp.2" "$tmp"
+  fi
+  mv "$tmp" "$gi"
 }

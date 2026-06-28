@@ -17,19 +17,22 @@ external.json            # GitHub 仓库来的外部 skill 清单（提交进仓
 PACKAGES.md              # 三类 skill 一览（脚本生成，勿手改）
 links.txt                # 链接过的项目（本地、gitignore，绝对路径）
 scripts/
+  check.sh               # 一键校验（doctor + gen --check），可做 pre-commit / CI
   store/                 # 管中央仓库
     doctor.sh            # 核对目录与三类清单是否一致
     gen-packages.sh      # 重新生成 PACKAGES.md
     mark-authored.sh     # 标记自己写的 skill 进 authored.txt
     add-external.sh      # 引入 GitHub 仓库里的 skill（clone + 符号链接）
     sync-external.sh     # 按 external.json 还原 / 更新外部 skill
+    remove-external.sh   # 移除外部 skill（删链接 + 出 external.json + 去 gitignore）
   project/               # 管链接进目标项目
     link-skill.sh        # 把 skill / package 软链接进目标项目
     register.sh          # 手动把项目登记进 links.txt
     prune-skills.sh      # 清理目标项目里失效（悬空）的软链接
     prune-all.sh         # 对所有登记过的项目批量清理
-  lib/
-    external.sh          # 外部 skill 的共享函数
+  lib/                   # 被 source 的共享函数（非命令）
+    lock.sh              # skills-lock.json / authored.txt 查询
+    external.sh          # 外部 skill（解析 repo、读写 external.json、gitignore）
 ```
 
 skill 分三类，各有来源记录：`npx skills add` 装的记在 `skills-lock.json`，
