@@ -18,6 +18,7 @@ PACKAGES.md              # 三类 skill 一览（脚本生成，勿手改）
 links.txt                # 链接过的项目（本地、gitignore，绝对路径）
 scripts/
   check.sh               # 一键校验（doctor + gen --check），可做 pre-commit / CI
+  test.sh                # 烟雾测试（跑在仓库副本上，不碰真实环境）
   install-hooks.sh       # 启用 git 钩子（设置 core.hooksPath 指向 hooks/）
   hooks/
     pre-commit           # 提交前跑 check.sh，不一致就拦下

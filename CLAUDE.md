@@ -49,6 +49,7 @@ All scripts take `-h/--help`. Paths assume repo root as CWD.
 
 ```bash
 # Inventory / health
+scripts/test.sh                         # smoke tests (run on a repo copy; mutates nothing real)
 scripts/check.sh                        # doctor + gen --check; CI / pre-commit gate
 scripts/store/doctor.sh                 # check store vs all 3 manifests; exit!=0 on mismatch
 scripts/store/gen-packages.sh           # regenerate PACKAGES.md from the manifests
@@ -92,8 +93,10 @@ After any change to the store (npx add/remove, authoring, external add), run `do
 - Self-referential paths appear in many places: usage headers, runtime fix-it messages, the strings
   `gen-packages.sh` writes into `PACKAGES.md`, and the `ensure_gitignore` marker. If you move or
   rename a script, update all of them (and re-run `gen-packages.sh`, or `--check` will fail).
-- Test destructive scripts against a `mktemp -d` target and a local `git init` "remote" (the suite
-  needs no network); reset `external.json`/`PACKAGES.md`/`.gitignore` afterward.
+- `scripts/test.sh` is the smoke suite: it runs the scripts against a throwaway COPY of the repo
+  (so `external.json`/`PACKAGES.md`/`links.txt` are never mutated), a fake `$HOME` for global tests,
+  and a local `git init` "remote" for external tests — no network. Add a check there when you change
+  behavior. It's standalone (not wired into the pre-commit hook, to keep commits fast).
 
 ## Conventions
 
