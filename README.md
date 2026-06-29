@@ -18,6 +18,9 @@ PACKAGES.md              # 三类 skill 一览（脚本生成，勿手改）
 links.txt                # 链接过的项目（本地、gitignore，绝对路径）
 scripts/
   check.sh               # 一键校验（doctor + gen --check），可做 pre-commit / CI
+  install-hooks.sh       # 启用 git 钩子（设置 core.hooksPath 指向 hooks/）
+  hooks/
+    pre-commit           # 提交前跑 check.sh，不一致就拦下
   store/                 # 管中央仓库
     doctor.sh            # 核对目录与三类清单是否一致
     gen-packages.sh      # 重新生成 PACKAGES.md
@@ -37,6 +40,10 @@ scripts/
 
 skill 分三类，各有来源记录：`npx skills add` 装的记在 `skills-lock.json`，
 自己写的记在 `authored.txt`，从 GitHub 仓库引入的记在 `external.json`。
+
+> 克隆后跑一次 `scripts/install-hooks.sh` 启用提交前校验：每次 `git commit` 会先跑
+> `scripts/check.sh`，仓库不一致（孤儿目录、`PACKAGES.md` 过期等）就拦下提交。
+> 需要跳过时用 `git commit --no-verify`。
 
 > `link-skill.sh` 每次链接都会把目标项目的绝对路径登记进 `links.txt`，
 > 供 `prune-all.sh` 批量清理。路径是本机专属的，所以这个文件不提交（已 gitignore）。

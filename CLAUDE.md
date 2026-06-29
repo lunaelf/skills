@@ -98,3 +98,8 @@ After any change to the store (npx add/remove, authoring, external add), run `do
 Commits follow Conventional Commits (`feat`/`fix`/`refactor`/`chore(...)`), one logical change each,
 as the existing history shows. There is a `git-commit` skill in this very repo
 (`.agents/skills/git-commit/`) describing the full spec.
+
+`scripts/install-hooks.sh` points `core.hooksPath` at `scripts/hooks/`, whose `pre-commit` runs
+`scripts/check.sh` — so commits are blocked while the repo is inconsistent (orphan dirs, stale
+`PACKAGES.md`). After changing skills/manifests, run `gen-packages.sh` or the commit will be
+rejected (bypass with `git commit --no-verify`).
