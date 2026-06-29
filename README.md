@@ -158,6 +158,28 @@ scripts/project/link-skill.sh ~/Documents/code/github.com/me/demo tdd mattpocock
 
 `-h` / `--help` 查看完整用法。
 
+### 装成全局 skill（`-g`）
+
+想让某个 skill 对所有项目可用，用 `-g`（不需要目标路径）。布局和 `npx skills add -g`
+一致——规范位置在 `~/.agents/skills/`，再逐个软链接进 Claude Code 的全局目录：
+
+```bash
+scripts/project/link-skill.sh -g <skill或package> [更多...]
+# 例：
+scripts/project/link-skill.sh -g hv-analysis
+```
+
+为每个 skill 建立：
+
+```
+~/.agents/skills/<name>  ->  <本仓库>/.agents/skills/<name>
+~/.claude/skills/<name>  ->  ../../.agents/skills/<name>
+```
+
+> 和项目模式不同：项目用单个入口链 `.claude/skills -> ../.agents/skills`，全局用**逐个**
+> `~/.claude/skills/<name>` 链接（因为 `~/.claude/skills` 通常已是真实目录，混着 npx -g 装的
+> skill）。已被 npx 装成真实目录的同名 skill 不会被覆盖。全局链接不登记进 `links.txt`。
+
 ## package 更新后某些 skill 被删了怎么办
 
 `npx skills update` 只更新现有 skill；upstream 删掉的 skill 用 `npx skills remove <skill>`
