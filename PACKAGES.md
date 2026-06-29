@@ -2,7 +2,7 @@
 
 > 本文件由 `scripts/store/gen-packages.sh` 从 `skills-lock.json` 生成，请勿手动编辑。
 
-共 1 个 package。
+共 3 个 package。
 
 ## mattpocock/skills
 
@@ -25,6 +25,18 @@
   - `to-prd`
   - `triage`
   - `writing-great-skills`
+
+## microsoft/playwright-cli
+
+- 来源类型：github
+- skill（1 个）：
+  - `playwright-cli`
+
+## vercel-labs/skills
+
+- 来源类型：github
+- skill（1 个）：
+  - `find-skills`
 
 ## 自己写的 skill（1 个）
 
