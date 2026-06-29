@@ -9,10 +9,14 @@
 #
 # Projects whose directory no longer exists are dropped from the registry.
 #
+# With -g it also prunes the global links (link-skill.sh -g installs), so one
+# command cleans up everywhere after a skill is removed from the store.
+#
 # Usage:
-#   scripts/project/prune-all.sh [-n]
+#   scripts/project/prune-all.sh [-n] [-g]
 #
 # Options:
+#   -g, --global    Also prune global links (runs prune-skills.sh -g).
 #   -n, --dry-run   Pass through to prune-skills.sh; don't remove links or
 #                   rewrite the registry.
 #   -h, --help      Show this help.
@@ -25,9 +29,11 @@ usage() {
 }
 
 dry_run=0
+global=0
 for arg in "$@"; do
   case "$arg" in
     -n|--dry-run) dry_run=1 ;;
+    -g|--global)  global=1 ;;
     -h|--help)    usage 0 ;;
     *)            echo "error: unknown option: $arg" >&2; usage 1 >&2 ;;
   esac
@@ -38,36 +44,40 @@ repo_root="$(cd "$script_dir/../.." && pwd)"
 registry="$repo_root/links.txt"
 prune="$script_dir/prune-skills.sh"
 
-if [ ! -f "$registry" ]; then
-  echo "no registry yet ($registry); nothing to prune"
-  exit 0
-fi
+dry_flag=()
+[ "$dry_run" -eq 1 ] && dry_flag=(-n)
 
 kept=()
 gone=()
-while IFS= read -r project || [ -n "$project" ]; do
-  [ -n "$project" ] || continue
-  if [ ! -d "$project" ]; then
-    gone+=("$project")
-    continue
-  fi
-  kept+=("$project")
-  echo "=== $project ==="
-  if [ "$dry_run" -eq 1 ]; then
-    "$prune" -n "$project" || echo "warn: prune failed for $project" >&2
-  else
-    "$prune" "$project" || echo "warn: prune failed for $project" >&2
-  fi
-done < "$registry"
+if [ -f "$registry" ]; then
+  while IFS= read -r project || [ -n "$project" ]; do
+    [ -n "$project" ] || continue
+    if [ ! -d "$project" ]; then
+      gone+=("$project")
+      continue
+    fi
+    kept+=("$project")
+    echo "=== $project ==="
+    "$prune" ${dry_flag[@]+"${dry_flag[@]}"} "$project" || echo "warn: prune failed for $project" >&2
+  done < "$registry"
 
-if [ "${#gone[@]}" -gt 0 ]; then
-  echo
-  echo "projects no longer on disk (dropped from registry):"
-  printf '  - %s\n' "${gone[@]}"
-  if [ "$dry_run" -eq 0 ]; then
-    printf '%s\n' "${kept[@]:-}" | grep -v '^$' > "$registry" || : > "$registry"
+  if [ "${#gone[@]}" -gt 0 ]; then
+    echo
+    echo "projects no longer on disk (dropped from registry):"
+    printf '  - %s\n' "${gone[@]}"
+    if [ "$dry_run" -eq 0 ]; then
+      printf '%s\n' "${kept[@]:-}" | grep -v '^$' > "$registry" || : > "$registry"
+    fi
   fi
+else
+  echo "no registry yet ($registry); no projects to prune"
 fi
 
 echo
 echo "pruned ${#kept[@]} project(s)"
+
+if [ "$global" -eq 1 ]; then
+  echo
+  echo "=== global (~/.agents + ~/.claude) ==="
+  "$prune" ${dry_flag[@]+"${dry_flag[@]}"} -g || echo "warn: global prune failed" >&2
+fi

@@ -67,7 +67,7 @@ scripts/project/link-skill.sh -g <skill|package>...              # install globa
 scripts/project/register.sh <target>...                          # manually register a hand-linked project
 scripts/project/prune-skills.sh [-n] <target>                    # remove dangling links in one project
 scripts/project/prune-skills.sh [-n] -g                          # prune dangling global links (~/.agents + ~/.claude)
-scripts/project/prune-all.sh [-n]                                # prune every project in links.txt
+scripts/project/prune-all.sh [-n] [-g]                           # prune every project in links.txt (+ global with -g)
 ```
 
 After any change to the store (npx add/remove, authoring, external add), run `doctor.sh` then

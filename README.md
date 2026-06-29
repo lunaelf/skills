@@ -215,11 +215,12 @@ scripts/project/prune-all.sh        # 逐个项目清理悬空软链接
 
 已不在磁盘上的项目会自动从 `links.txt` 移除。
 
-**全局链接**（`link-skill.sh -g` 装的）不在 `links.txt` 里，单独清：
+**全局链接**（`link-skill.sh -g` 装的）不在 `links.txt` 里。单独清，或给 `prune-all` 加 `-g`
+一并清掉：
 
 ```bash
-scripts/project/prune-skills.sh -g -n   # dry-run
-scripts/project/prune-skills.sh -g      # 清理 ~/.agents/skills + ~/.claude/skills
+scripts/project/prune-skills.sh -g      # 只清全局：~/.agents/skills + ~/.claude/skills
+scripts/project/prune-all.sh -g         # 所有登记项目 + 全局，一条命令清所有
 ```
 
 只删**指向本仓库**且已失效的全局链接（连带配对的 `~/.claude/skills/<name>`）；指向别的
