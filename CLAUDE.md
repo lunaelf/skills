@@ -66,6 +66,7 @@ scripts/project/link-skill.sh [-f] <target> <skill|package>...   # symlink + aut
 scripts/project/link-skill.sh -g <skill|package>...              # install globally (~/.agents + ~/.claude)
 scripts/project/register.sh <target>...                          # manually register a hand-linked project
 scripts/project/prune-skills.sh [-n] <target>                    # remove dangling links in one project
+scripts/project/prune-skills.sh [-n] -g                          # prune dangling global links (~/.agents + ~/.claude)
 scripts/project/prune-all.sh [-n]                                # prune every project in links.txt
 ```
 
