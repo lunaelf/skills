@@ -85,10 +85,13 @@ t  "unlink idempotent"    true
 
 echo "== register -r =="
 RG="$(mktmp)"
+: > "$R/links.txt"                                    # RG is the ONLY entry (empty-result case)
 "$R/scripts/project/register.sh" "$RG" >/dev/null 2>&1
 t  "registered"           grep -qxF "$RG" "$R/links.txt"
 "$R/scripts/project/register.sh" -r "$RG" >/dev/null 2>&1
-tn "deregistered"         grep -qxF "$RG" "$R/links.txt"
+tn "deregistered (sole entry)" grep -qxF "$RG" "$R/links.txt"
+teq "links.txt now empty" "$(grep -c . "$R/links.txt")" "0"
+tn "no links.txt.tmp left" test -e "$R/links.txt.tmp"
 
 echo "== unlink (global, fake HOME) =="
 UG="$(mktmp)"

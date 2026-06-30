@@ -54,7 +54,10 @@ for raw in "${positional[@]}"; do
 
   if [ "$remove" -eq 1 ]; then
     if grep -qxF "$project" "$registry"; then
-      grep -vxF "$project" "$registry" > "$registry.tmp" && mv "$registry.tmp" "$registry"
+      # `grep -v` exits 1 when the result is empty (removing the only entry);
+      # don't let that skip the move or leave the temp file behind.
+      { grep -vxF "$project" "$registry" || true; } > "$registry.tmp"
+      mv "$registry.tmp" "$registry"
       echo "deregistered: $project"
     else
       echo "not registered: $project"
