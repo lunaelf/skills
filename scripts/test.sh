@@ -30,6 +30,7 @@ R="$(mktmp)"
 ( cd "$real_root" && tar cf - --exclude=.git --exclude=node_modules --exclude='*-workspace' --exclude=links.txt . ) | ( cd "$R" && tar xf - )
 
 LINK="$R/scripts/project/link-skill.sh"
+UNLINK="$R/scripts/project/unlink-skill.sh"
 PRUNE="$R/scripts/project/prune-skills.sh"
 PRUNEALL="$R/scripts/project/prune-all.sh"
 . "$R/scripts/lib/lock.sh"
@@ -40,9 +41,9 @@ teq "repo_url shorthand"      "$(repo_url owner/repo)"                    "https
 tsfx "clone_dir github https" "$(clone_dir_for https://github.com/o/p.git)" "/github.com/o/p"
 tsfx "clone_dir ssh"          "$(clone_dir_for git@github.com:o/p.git)"     "/github.com/o/p"
 tsfx "clone_dir gitlab"       "$(clone_dir_for https://gitlab.com/g/p)"     "/gitlab.com/g/p"
-teq "lock skill count"        "$(lock_skill_names "$R/skills-lock.json" | grep -c .)" "17"
-teq "lock package"            "$(lock_packages "$R/skills-lock.json")"      "mattpocock/skills"
-teq "package members count"   "$(lock_package_members "$R/skills-lock.json" mattpocock/skills | grep -c .)" "17"
+teq "lock lists tdd"          "$(lock_skill_names "$R/skills-lock.json" | grep -cx tdd)" "1"
+teq "packages include mattpocock" "$(lock_packages "$R/skills-lock.json" | grep -cx 'mattpocock/skills')" "1"
+teq "mattpocock has 17 members"   "$(lock_package_members "$R/skills-lock.json" mattpocock/skills | grep -c .)" "17"
 
 echo "== link (project) =="
 P="$(mktmp)"
@@ -65,6 +66,29 @@ teq "global claude target" "$(readlink "$GH/.claude/skills/tdd")" "../../.agents
 tn "global skips links.txt" test -e "$GH/links.txt"
 mkdir -p "$GH/.agents/skills/realdir"            # simulate npx -g real install
 tn "refuses to clobber real dir" sh -c "HOME='$GH' '$LINK' -g realdir"
+
+echo "== unlink (project) =="
+U="$(mktmp)"
+"$LINK" "$U" tdd prototype >/dev/null 2>&1
+"$UNLINK" -n "$U" tdd >/dev/null 2>&1                 # dry-run removes nothing
+t  "dry-run keeps link"   test -L "$U/.agents/skills/tdd"
+"$UNLINK" "$U" tdd >/dev/null 2>&1
+tn "tdd unlinked"         test -L "$U/.agents/skills/tdd"
+t  "prototype kept"       test -L "$U/.agents/skills/prototype"
+"$UNLINK" "$U" prototype >/dev/null 2>&1              # last one -> empties dir
+tn "entry link cleaned"   test -L "$U/.claude/skills"
+tn "empty .agents/skills removed" test -d "$U/.agents/skills"
+"$UNLINK" "$U" tdd >/dev/null 2>&1                    # idempotent: already gone
+t  "unlink idempotent"    true
+
+echo "== unlink (global, fake HOME) =="
+UG="$(mktmp)"
+HOME="$UG" "$LINK" -g tdd >/dev/null 2>&1
+mkdir -p "$UG/.agents/skills/foreigndir"             # a real dir (npx -g style)
+HOME="$UG" "$UNLINK" -g tdd >/dev/null 2>&1
+tn "global agents unlinked" test -L "$UG/.agents/skills/tdd"
+tn "global claude unlinked" test -L "$UG/.claude/skills/tdd"
+t  "real dir left alone"  test -d "$UG/.agents/skills/foreigndir"
 
 echo "== prune (project) =="
 DP="$(mktmp)"; mkdir -p "$DP/.agents/skills" "$DP/.claude"

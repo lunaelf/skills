@@ -65,6 +65,7 @@ scripts/store/sync-external.sh [--no-pull]   # restore/update all external skill
 # Link skills INTO a target project (downstream)
 scripts/project/link-skill.sh [-f] <target> <skill|package>...   # symlink + auto-register target
 scripts/project/link-skill.sh -g <skill|package>...              # install globally (~/.agents + ~/.claude)
+scripts/project/unlink-skill.sh [-n] [-g] <target?> <skill|package>...   # remove links (inverse of link)
 scripts/project/register.sh <target>...                          # manually register a hand-linked project
 scripts/project/prune-skills.sh [-n] <target>                    # remove dangling links in one project
 scripts/project/prune-skills.sh [-n] -g                          # prune dangling global links (~/.agents + ~/.claude)
@@ -77,7 +78,8 @@ After any change to the store (npx add/remove, authoring, external add), run `do
 ## Working on the scripts
 
 - `scripts/lib/` holds sourced (not executed) helpers. `lock.sh` has the `skills-lock.json` /
-  `authored.txt` queries (`lock_*`, `read_authored`); `external.sh` has repo-URL parsing
+  `authored.txt` queries (`lock_*`, `read_authored`) plus `resolve_skill_inputs` (name/package ->
+  deduped skill names, shared by link-skill.sh and unlink-skill.sh); `external.sh` has repo-URL parsing
   (`parse_repo`/`clone_dir_for`), `external.json` read/write, and `ensure_gitignore`/`gitignore_remove`.
   Reuse these rather than re-inlining a jq filter — that duplication was the point of the lib.
   JSON is read/written with `jq` when available, falling back to `python3`.

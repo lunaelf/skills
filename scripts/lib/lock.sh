@@ -59,3 +59,41 @@ read_authored() {
   [ -f "$1" ] || return 0
   grep -vE '^[[:space:]]*(#|$)' "$1" 2>/dev/null || true
 }
+
+# resolve_skill_inputs <lock> <store-dir> <input>...
+# Each input is a skill dir name in the store, or a package whose members are
+# expanded. Echoes the deduped skill names to stdout; per-package info and
+# per-unknown errors go to stderr. Returns 1 if any input resolves to nothing.
+# Shared by link-skill.sh and unlink-skill.sh.
+resolve_skill_inputs() {
+  local lock="$1" store="$2"; shift 2
+  local input m members n seen=" " rc=0
+  for input in "$@"; do
+    if [ -d "$store/$input" ]; then
+      case "$seen" in *" $input "*) ;; *) seen="$seen$input "; printf '%s\n' "$input" ;; esac
+      continue
+    fi
+    members="$(lock_package_members "$lock" "$input")"
+    if [ -n "$members" ]; then
+      n=0
+      while IFS= read -r m; do
+        [ -n "$m" ] || continue
+        n=$((n + 1))
+        case "$seen" in *" $m "*) ;; *) seen="$seen$m "; printf '%s\n' "$m" ;; esac
+      done <<EOF
+$members
+EOF
+      echo "package '$input' -> $n skills" >&2
+    else
+      {
+        echo "error: '$input' is neither a skill nor a known package"
+        echo "available skills:"
+        (cd "$store" && for d in */; do [ -f "$d/SKILL.md" ] && echo "  - ${d%/}" || :; done)
+        echo "available packages:"
+        lock_packages "$lock" | sed 's/^/  - /'
+      } >&2
+      rc=1
+    fi
+  done
+  return "$rc"
+}

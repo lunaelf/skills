@@ -31,6 +31,7 @@ scripts/
     remove-external.sh   # 移除外部 skill（删链接 + 出 external.json + 去 gitignore）
   project/               # 管链接进目标项目
     link-skill.sh        # 把 skill / package 软链接进目标项目
+    unlink-skill.sh      # 移除已链接的 skill（link 的反操作）
     register.sh          # 手动把项目登记进 links.txt
     prune-skills.sh      # 清理目标项目里失效（悬空）的软链接
     prune-all.sh         # 对所有登记过的项目批量清理
@@ -180,6 +181,19 @@ scripts/project/link-skill.sh -g hv-analysis
 > 和项目模式不同：项目用单个入口链 `.claude/skills -> ../.agents/skills`，全局用**逐个**
 > `~/.claude/skills/<name>` 链接（因为 `~/.claude/skills` 通常已是真实目录，混着 npx -g 装的
 > skill）。已被 npx 装成真实目录的同名 skill 不会被覆盖。全局链接不登记进 `links.txt`。
+
+### 移除已链接的 skill（`unlink-skill.sh`）
+
+`link-skill.sh` 的反操作。`prune-skills.sh` 只删**失效**的链接；要删一个**仍然有效**的，用
+`unlink-skill.sh`（参数同 link：skill 名或 package 名，`-g` 全局，`-n` dry-run）：
+
+```bash
+scripts/project/unlink-skill.sh <目标项目> <skill或package> [更多...]
+scripts/project/unlink-skill.sh -g <skill或package> [更多...]   # 移除全局链接
+```
+
+只删**符号链接**（真实目录拒删）；项目里删空了顺带清掉入口链和空目录；全局只动**指向本仓库**
+的链接。已经不在的就跳过（幂等）。
 
 ## package 更新后某些 skill 被删了怎么办
 

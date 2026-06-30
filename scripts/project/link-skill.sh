@@ -168,42 +168,14 @@ ensure_entry_link() {
 
 # --- resolve inputs to a deduped skill list ---------------------------------
 
-resolved=()
-seen=" "   # space-delimited set for dedupe
-add_skill() {
-  case "$seen" in
-    *" $1 "*) return ;;
-  esac
-  seen="$seen$1 "
-  resolved+=("$1")
-}
-
 failed=0
-for input in "${inputs[@]}"; do
-  if [ -d "$src_skills_dir/$input" ]; then
-    add_skill "$input"
-    continue
-  fi
-
-  members=()
-  while IFS= read -r m; do
-    [ -n "$m" ] && members+=("$m")
-  done < <(lock_package_members "$lock_file" "$input")
-
-  if [ "${#members[@]}" -gt 0 ]; then
-    echo "package '$input' -> ${#members[@]} skills"
-    for m in "${members[@]}"; do
-      add_skill "$m"
-    done
-  else
-    echo "error: '$input' is neither a skill nor a known package" >&2
-    echo "available skills:" >&2
-    (cd "$src_skills_dir" && for d in */; do [ -f "$d/SKILL.md" ] && echo "${d%/}" || :; done) | sed 's/^/  - /' >&2
-    echo "available packages:" >&2
-    lock_packages "$lock_file" | sed 's/^/  - /' >&2
-    failed=1
-  fi
-done
+resolved=()
+resolved_out="$(resolve_skill_inputs "$lock_file" "$src_skills_dir" "${inputs[@]}")" || failed=1
+while IFS= read -r name; do
+  [ -n "$name" ] && resolved+=("$name")
+done <<EOF
+$resolved_out
+EOF
 
 for name in "${resolved[@]:-}"; do
   [ -n "$name" ] || continue
