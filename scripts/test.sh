@@ -75,11 +75,20 @@ t  "dry-run keeps link"   test -L "$U/.agents/skills/tdd"
 "$UNLINK" "$U" tdd >/dev/null 2>&1
 tn "tdd unlinked"         test -L "$U/.agents/skills/tdd"
 t  "prototype kept"       test -L "$U/.agents/skills/prototype"
+t  "U registered while linked" grep -qxF "$U" "$R/links.txt"
 "$UNLINK" "$U" prototype >/dev/null 2>&1              # last one -> empties dir
 tn "entry link cleaned"   test -L "$U/.claude/skills"
 tn "empty .agents/skills removed" test -d "$U/.agents/skills"
+tn "U deregistered when empty" grep -qxF "$U" "$R/links.txt"
 "$UNLINK" "$U" tdd >/dev/null 2>&1                    # idempotent: already gone
 t  "unlink idempotent"    true
+
+echo "== register -r =="
+RG="$(mktmp)"
+"$R/scripts/project/register.sh" "$RG" >/dev/null 2>&1
+t  "registered"           grep -qxF "$RG" "$R/links.txt"
+"$R/scripts/project/register.sh" -r "$RG" >/dev/null 2>&1
+tn "deregistered"         grep -qxF "$RG" "$R/links.txt"
 
 echo "== unlink (global, fake HOME) =="
 UG="$(mktmp)"
@@ -119,6 +128,7 @@ ln -s "../../.agents/skills/g1"    "$GA/.claude/skills/g1"
 HOME="$GA" "$PRUNEALL" -g >/dev/null 2>&1
 tn "project link pruned"  test -L "$AP/.agents/skills/dead"
 tn "global link pruned"   test -L "$GA/.agents/skills/g1"
+tn "emptied project deregistered" grep -qxF "$AP" "$R/links.txt"
 
 echo "== external (fake remote) =="
 REM="$(mktmp)/cool"; mkdir -p "$REM/s/foo"

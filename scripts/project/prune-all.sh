@@ -47,6 +47,17 @@ prune="$script_dir/prune-skills.sh"
 dry_flag=()
 [ "$dry_run" -eq 1 ] && dry_flag=(-n)
 
+# Does the project still have any linked skills under .agents/skills?
+has_links() {
+  local d="$1/.agents/skills" e
+  [ -d "$d" ] || return 1
+  shopt -s nullglob 2>/dev/null || true
+  for e in "$d"/*; do
+    if [ -e "$e" ] || [ -L "$e" ]; then return 0; fi
+  done
+  return 1
+}
+
 kept=()
 gone=()
 if [ -f "$registry" ]; then
@@ -56,14 +67,15 @@ if [ -f "$registry" ]; then
       gone+=("$project")
       continue
     fi
-    kept+=("$project")
     echo "=== $project ==="
     "$prune" ${dry_flag[@]+"${dry_flag[@]}"} "$project" || echo "warn: prune failed for $project" >&2
+    # After pruning, drop it from the registry if no skills are linked anymore.
+    if has_links "$project"; then kept+=("$project"); else gone+=("$project"); fi
   done < "$registry"
 
   if [ "${#gone[@]}" -gt 0 ]; then
     echo
-    echo "projects no longer on disk (dropped from registry):"
+    echo "dropped from registry (gone, or no links left):"
     printf '  - %s\n' "${gone[@]}"
     if [ "$dry_run" -eq 0 ]; then
       printf '%s\n' "${kept[@]:-}" | grep -v '^$' > "$registry" || : > "$registry"

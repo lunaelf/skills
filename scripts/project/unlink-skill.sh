@@ -137,6 +137,8 @@ if [ "$global" -eq 0 ] && [ "$dry_run" -eq 0 ] && [ -d "$target/.agents/skills" 
     fi
     echo "removed empty dir: .agents/skills"
     rmdir "$target/.agents/skills" 2>/dev/null || true
+    # No skills left here — drop it from the registry.
+    "$script_dir/register.sh" -r "$target" || true
   fi
 fi
 

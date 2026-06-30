@@ -32,7 +32,7 @@ scripts/
   project/               # 管链接进目标项目
     link-skill.sh        # 把 skill / package 软链接进目标项目
     unlink-skill.sh      # 移除已链接的 skill（link 的反操作）
-    register.sh          # 手动把项目登记进 links.txt
+    register.sh          # 手动把项目登记/反登记（-r）进 links.txt
     prune-skills.sh      # 清理目标项目里失效（悬空）的软链接
     prune-all.sh         # 对所有登记过的项目批量清理
   lib/                   # 被 source 的共享函数（非命令）
@@ -192,8 +192,10 @@ scripts/project/unlink-skill.sh <目标项目> <skill或package> [更多...]
 scripts/project/unlink-skill.sh -g <skill或package> [更多...]   # 移除全局链接
 ```
 
-只删**符号链接**（真实目录拒删）；项目里删空了顺带清掉入口链和空目录；全局只动**指向本仓库**
-的链接。已经不在的就跳过（幂等）。
+只删**符号链接**（真实目录拒删）；全局只动**指向本仓库**的链接；已经不在的就跳过（幂等）。
+项目里删到一个 skill 都不剩时，会清掉入口链和空目录，并把该项目从 `links.txt` **反登记**
+（`prune-all` 也会顺手把"没有链接了"的项目移出 `links.txt`）。手动反登记用
+`scripts/project/register.sh -r <项目>`。
 
 ## package 更新后某些 skill 被删了怎么办
 

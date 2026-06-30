@@ -41,7 +41,9 @@ The symlink points at a machine-specific absolute path, so it is **gitignored**;
 files out of git.
 
 `links.txt` is the analogous machine-local file for the *downstream* side: it records absolute
-paths of projects that linked skills (so `prune-all.sh` can find them). Also gitignored.
+paths of projects that have ≥1 linked skill (so `prune-all.sh` can find them). `link-skill.sh`
+registers a target; `unlink-skill.sh` and `prune-all.sh` de-register a project once it drops to
+zero links (`register.sh -r` does it by hand). Also gitignored.
 
 ## Commands
 
@@ -66,7 +68,7 @@ scripts/store/sync-external.sh [--no-pull]   # restore/update all external skill
 scripts/project/link-skill.sh [-f] <target> <skill|package>...   # symlink + auto-register target
 scripts/project/link-skill.sh -g <skill|package>...              # install globally (~/.agents + ~/.claude)
 scripts/project/unlink-skill.sh [-n] [-g] <target?> <skill|package>...   # remove links (inverse of link)
-scripts/project/register.sh <target>...                          # manually register a hand-linked project
+scripts/project/register.sh [-r] <target>...                     # (de)register a project in links.txt
 scripts/project/prune-skills.sh [-n] <target>                    # remove dangling links in one project
 scripts/project/prune-skills.sh [-n] -g                          # prune dangling global links (~/.agents + ~/.claude)
 scripts/project/prune-all.sh [-n] [-g]                           # prune every project in links.txt (+ global with -g)

@@ -11,8 +11,10 @@
 #
 # Usage:
 #   scripts/project/register.sh <project-path> [<project-path> ...]
+#   scripts/project/register.sh -r <project-path> [<project-path> ...]
 #
 # Options:
+#   -r, --remove  De-register the project(s) instead of adding them.
 #   -h, --help    Show this help.
 
 set -euo pipefail
@@ -22,12 +24,14 @@ usage() {
   exit "${1:-0}"
 }
 
+remove=0
 positional=()
 for arg in "$@"; do
   case "$arg" in
-    -h|--help) usage 0 ;;
-    -*)        echo "error: unknown option: $arg" >&2; usage 1 >&2 ;;
-    *)         positional+=("$arg") ;;
+    -r|--remove) remove=1 ;;
+    -h|--help)   usage 0 ;;
+    -*)          echo "error: unknown option: $arg" >&2; usage 1 >&2 ;;
+    *)           positional+=("$arg") ;;
   esac
 done
 
@@ -41,21 +45,33 @@ repo_root="$(cd "$script_dir/../.." && pwd)"
 registry="$repo_root/links.txt"
 touch "$registry"
 
+# Resolve to an absolute path; fall back to the literal arg if the dir is gone.
+abspath() { if [ -d "$1" ]; then (cd "$1" && pwd); else printf '%s\n' "$1"; fi; }
+
 failed=0
 for raw in "${positional[@]}"; do
+  project="$(abspath "$raw")"
+
+  if [ "$remove" -eq 1 ]; then
+    if grep -qxF "$project" "$registry"; then
+      grep -vxF "$project" "$registry" > "$registry.tmp" && mv "$registry.tmp" "$registry"
+      echo "deregistered: $project"
+    else
+      echo "not registered: $project"
+    fi
+    continue
+  fi
+
   if [ ! -d "$raw" ]; then
     echo "error: project path does not exist: $raw" >&2
     failed=1
     continue
   fi
-  project="$(cd "$raw" && pwd)"
-
   if [ "$project" = "$repo_root" ]; then
     echo "error: refusing to register the skills repo itself" >&2
     failed=1
     continue
   fi
-
   if grep -qxF "$project" "$registry"; then
     echo "already registered: $project"
     continue
