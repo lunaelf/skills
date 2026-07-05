@@ -2,7 +2,13 @@
 
 > 本文件由 `scripts/store/gen-packages.sh` 从 `skills-lock.json` 生成，请勿手动编辑。
 
-共 3 个 package。
+共 5 个 package。
+
+## blader/humanizer
+
+- 来源类型：github
+- skill（1 个）：
+  - `humanizer`
 
 ## mattpocock/skills
 
@@ -31,6 +37,12 @@
 - 来源类型：github
 - skill（1 个）：
   - `playwright-cli`
+
+## op7418/Humanizer-zh
+
+- 来源类型：github
+- skill（1 个）：
+  - `humanizer-zh`
 
 ## vercel-labs/skills
 
