@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Skills Store</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --line:#e2e5ea; --fg:#1e2430; --dim:#697180;
+  --acc:#2563eb; --ok:#15803d; --warn:#b45309; --err:#dc2626; --purple:#7c3aed;
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.55 -apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+     background:var(--bg);color:var(--fg)}
+button{font:inherit;padding:4px 10px;border:1px solid var(--line);border-radius:6px;
+       background:var(--card);color:var(--fg);cursor:pointer}
+button:hover{border-color:var(--acc);color:var(--acc)}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+button.primary:hover{opacity:.9;color:#fff}
+button.danger:hover{border-color:var(--err);color:var(--err)}
+button:disabled{opacity:.45;cursor:default;pointer-events:none}
+input,select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:6px;
+             background:var(--card);color:var(--fg)}
+input:focus,select:focus{outline:none;border-color:var(--acc)}
+pre{margin:0;font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+       padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0 6px 0 0}
+.spacer{flex:1}
+#banner{display:none;padding:8px 16px;background:#fef2f2;color:var(--err);
+        border-bottom:1px solid #fecaca}
+
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;white-space:nowrap}
+.b-ok{background:#dcfce7;color:var(--ok)} .b-err{background:#fee2e2;color:var(--err)}
+.b-warn{background:#fef3c7;color:var(--warn)}
+.b-npx{background:#dbeafe;color:var(--acc)} .b-authored{background:#dcfce7;color:var(--ok)}
+.b-external{background:#ede9fe;color:var(--purple)} .b-orphan{background:#fee2e2;color:var(--err)}
+.clickable{cursor:pointer}
+
+#healthOut{display:none;padding:10px 16px;background:#0f172a;color:#d1d9e6;
+           border-bottom:1px solid var(--line);max-height:220px;overflow:auto}
+
+main{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;
+     padding:16px;align-items:start}
+@media (max-width:980px){main{grid-template-columns:1fr}}
+.pane{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.pane h2{font-size:14px;margin:0 0 10px}
+
+.filters{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.filters input[type=search]{flex:1;min-width:140px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--dim);font-weight:600;white-space:nowrap}
+td.name{font-weight:600;cursor:pointer;white-space:nowrap}
+td.name:hover{color:var(--acc)}
+.desc{font-size:12px;color:var(--dim);font-weight:400;max-width:340px;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.mini{font-size:12px;padding:1px 7px;margin-left:4px}
+.dimline{margin-top:8px;font-size:12px;color:var(--dim)}
+
+#linkBar{display:none;position:sticky;bottom:0;margin-top:10px;padding:10px;gap:8px;
+         align-items:center;flex-wrap:wrap;background:#eef4ff;border:1px solid #bfdbfe;
+         border-radius:8px}
+#linkBar.on{display:flex}
+#newPath{display:none;min-width:260px}
+
+.card{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px}
+.cardhead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pname{font-weight:600}
+.ppath{font-size:12px;color:var(--dim);word-break:break-all}
+.plinks{list-style:none;margin:8px 0 0;padding:0}
+.plinks li{display:flex;align-items:center;gap:6px;padding:3px 0;
+           border-bottom:1px dashed var(--line)}
+.plinks li:last-child{border-bottom:none}
+.plinks .lname{flex:1;word-break:break-all}
+.cardfoot{display:flex;gap:8px;margin-top:8px}
+.rowform{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.rowform input{flex:1;min-width:200px}
+
+#logPane{margin:0 16px 16px}
+.logentry{border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--card)}
+.loghead{display:flex;gap:10px;align-items:center;padding:6px 10px;cursor:pointer;flex-wrap:wrap}
+.logcmd{font:12px ui-monospace,Menlo,monospace;color:var(--dim);word-break:break-all;flex:1}
+.logbody{display:none;padding:8px 10px;border-top:1px solid var(--line);background:#0f172a;
+         color:#d1d9e6;border-radius:0 0 8px 8px;max-height:300px;overflow:auto}
+
+dialog{border:1px solid var(--line);border-radius:10px;padding:16px;max-width:640px;width:90%}
+dialog::backdrop{background:rgba(15,23,42,.35)}
+dialog h3{margin:0 0 10px;font-size:15px}
+dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;padding:0}
+#modalPre{max-height:320px;overflow:auto;background:#0f172a;color:#d1d9e6;
+          padding:10px;border-radius:8px}
+.field{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.field label{font-size:12px;color:var(--dim)}
+#drawer{position:fixed;inset:0 0 0 auto;height:100vh;max-height:100vh;width:min(560px,92vw);
+        max-width:none;margin:0;border-radius:0;border-width:0 0 0 1px;overflow:auto}
+#drawerMd{background:#f8fafc;border:1px solid var(--line);border-radius:8px;
+          padding:10px;margin-top:10px;max-height:50vh;overflow:auto}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13px;margin:8px 0}
+.kv b{color:var(--dim);font-weight:500;white-space:nowrap}
+.kv span{word-break:break-all}
+</style>
+</head>
+<body>
+
+<div id="banner"></div>
+
+<header>
+  <h1>Skills Store</h1>
+  <span id="doctorBadge" class="badge clickable" data-action="health-toggle">doctor: …</span>
+  <span id="pkgBadge" class="badge">PACKAGES.md: …</span>
+  <span class="spacer"></span>
+  <button data-action="doctor">重跑 Doctor</button>
+  <button data-action="gen" id="btnGen">Gen PACKAGES</button>
+  <button data-action="sync">Sync External ⟳</button>
+  <button data-action="refresh">刷新</button>
+</header>
+<pre id="healthOut"></pre>
+
+<main>
+  <section class="pane" id="skillsPane">
+    <h2>Skills（store 全量）</h2>
+    <div class="filters">
+      <input type="search" id="q" placeholder="按名称 / 描述过滤…">
+      <select id="srcFilter">
+        <option value="">来源：全部</option>
+        <option value="npx">npx</option>
+        <option value="authored">authored</option>
+        <option value="external">external</option>
+        <option value="orphan">orphan</option>
+      </select>
+      <select id="pkgFilter"><option value="">包：全部</option></select>
+    </div>
+    <table>
+      <thead><tr>
+        <th><input type="checkbox" id="selAll"></th>
+        <th>名称</th><th>来源</th><th>被链接</th>
+      </tr></thead>
+      <tbody id="skillsBody"></tbody>
+    </table>
+    <div class="dimline" id="nonSkillLine"></div>
+    <div id="linkBar">
+      <span>已选 <b id="selCount">0</b> 个 → 链接到</span>
+      <select id="linkTarget"></select>
+      <input id="newPath" list="pathOpts" placeholder="/绝对路径…（可补全）">
+      <label><input type="checkbox" id="linkForce"> force</label>
+      <button class="primary" data-action="link-selected">链接</button>
+    </div>
+  </section>
+
+  <aside class="pane" id="projectsPane">
+    <h2>Projects</h2>
+    <div id="projectCards"></div>
+    <div class="rowform">
+      <input id="regPath" list="pathOpts" placeholder="注册新项目：/绝对路径…（可补全）">
+      <button data-action="register-submit">注册项目</button>
+    </div>
+    <div class="rowform">
+      <button data-action="ext-open">＋ 添加 External Skill</button>
+      <button class="danger" data-action="prune-all">Prune All（全部项目）</button>
+    </div>
+  </aside>
+</main>
+
+<section id="logPane">
+  <h2 style="font-size:14px">活动日志</h2>
+  <div id="log"></div>
+</section>
+
+<datalist id="pathOpts"></datalist>
+
+<dialog id="modal">
+  <h3 id="modalTitle"></h3>
+  <pre id="modalPre"></pre>
+  <menu>
+    <button data-action="modal-cancel">取消</button>
+    <button class="primary" data-action="modal-ok" id="modalOkBtn">确认执行</button>
+  </menu>
+</dialog>
+
+<dialog id="extDialog">
+  <h3>添加 External Skill</h3>
+  <div class="field"><label>repo（owner/repo 或 git URL）</label>
+    <input id="extRepo" placeholder="owner/repo"></div>
+  <div class="field"><label>skill 在仓库内的路径（含 SKILL.md 的目录）</label>
+    <input id="extPath" placeholder="skills/foo"></div>
+  <div class="field"><label>store 内名称（可选，默认取路径末段）</label>
+    <input id="extName"></div>
+  <div class="field"><label>分支 / 标签（可选）</label>
+    <input id="extRef"></div>
+  <label><input type="checkbox" id="extForce"> force（替换已存在的符号链接）</label>
+  <menu>
+    <button data-action="ext-cancel">取消</button>
+    <button class="primary" data-action="ext-submit">添加</button>
+  </menu>
+</dialog>
+
+<dialog id="drawer">
+  <div style="display:flex;align-items:center;gap:8px">
+    <h3 id="drawerTitle" style="flex:1;margin:0"></h3>
+    <button data-action="drawer-close">关闭</button>
+  </div>
+  <div id="drawerBody"></div>
+  <pre id="drawerMd">加载 SKILL.md…</pre>
+</dialog>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const token = new URLSearchParams(location.hash.slice(1)).get('t') || '';
+let state = null;
+let sel = new Set();
+let busy = false;
+let modalFn = null;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const base = p => p.split('/').filter(Boolean).pop() || p;
+
+function banner(msg){ const b = $('#banner'); b.textContent = msg; b.style.display = msg ? 'block' : 'none'; }
+
+async function api(path, opts = {}){
+  const headers = {'X-Auth-Token': token, ...(opts.headers || {})};
+  if (opts.body) headers['Content-Type'] = 'application/json';
+  const r = await fetch(path, {...opts, headers});
+  if (!r.ok){
+    let msg = 'HTTP ' + r.status;
+    try { msg = (await r.json()).error || msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  return r;
+}
+
+async function getState(){
+  state = await (await api('/api/state')).json();
+  render();
+}
+
+/* ---------- mutations + log ---------- */
+
+function logStart(label, res){
+  const el = document.createElement('div');
+  el.className = 'logentry';
+  el.innerHTML = `<div class="loghead" data-action="log-toggle">
+      <span>${new Date().toLocaleTimeString()}</span>
+      <span>${esc(label)}</span>
+      <span class="logcmd"></span>
+      <span class="badge b-warn logstat">运行中…</span>
+    </div><pre class="logbody"></pre>`;
+  $('#log').prepend(el);
+  return el;
+}
+function logFinish(el, res){
+  el.querySelector('.logcmd').textContent = res.cmd.join(' ');
+  const st = el.querySelector('.logstat');
+  st.textContent = res.exitCode === 0 ? `exit 0 · ${res.durationMs}ms` : `exit ${res.exitCode}`;
+  st.className = 'badge logstat ' + (res.exitCode === 0 ? 'b-ok' : 'b-err');
+  el.querySelector('.logbody').textContent =
+    '$ ' + res.cmd.join(' ') + '\n' + (res.stdout || '') +
+    (res.stderr ? '\n[stderr]\n' + res.stderr : '');
+}
+function logFail(el, msg){
+  const st = el.querySelector('.logstat');
+  st.textContent = '失败';
+  st.className = 'badge logstat b-err';
+  el.querySelector('.logbody').textContent = msg;
+}
+
+async function run(label, path, body){
+  if (busy){ alert('有操作正在执行，请稍候'); return null; }
+  busy = true;
+  const el = logStart(label);
+  try {
+    const res = await (await api(path, {method:'POST', body: JSON.stringify(body || {})})).json();
+    logFinish(el, res);
+    await getState();
+    return res;
+  } catch (e) {
+    logFail(el, e.message);
+    return null;
+  } finally { busy = false; }
+}
+
+function showModal(title, text, fn){
+  $('#modalTitle').textContent = title;
+  $('#modalPre').textContent = text;
+  modalFn = fn;
+  $('#modal').showModal();
+}
+
+/* dry-run first (via the script's own -n), show its real output, then confirm */
+async function confirmViaDryRun(label, path, body){
+  const preview = await run(label + '（dry-run 预览）', path, {...body, dryRun: true});
+  if (!preview) return;
+  const out = (preview.stdout || '') + (preview.stderr || '');
+  showModal(label, out.trim() || '（dry-run 无输出）',
+            () => run(label, path, body));
+}
+
+/* ---------- render ---------- */
+
+function render(){
+  banner('');
+  renderHealth();
+  renderPkgFilter();
+  renderSkills();
+  renderProjects();
+}
+
+function renderHealth(){
+  const d = state.health.doctor, p = state.health.packagesMd;
+  const db = $('#doctorBadge');
+  db.textContent = d.exitCode === 0 ? 'doctor: ok' : 'doctor: 异常（点击看输出）';
+  db.className = 'badge clickable ' + (d.exitCode === 0 ? 'b-ok' : 'b-err');
+  $('#healthOut').textContent = (d.stdout || '') + (d.stderr || '');
+  const pb = $('#pkgBadge');
+  pb.textContent = p.exitCode === 0 ? 'PACKAGES.md: 最新' : 'PACKAGES.md: 过期';
+  pb.className = 'badge ' + (p.exitCode === 0 ? 'b-ok' : 'b-warn');
+  $('#btnGen').classList.toggle('primary', p.exitCode !== 0);
+}
+
+function renderPkgFilter(){
+  const cur = $('#pkgFilter').value;
+  $('#pkgFilter').innerHTML = '<option value="">包：全部</option>' +
+    state.packages.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+  $('#pkgFilter').value = cur;
+}
+
+function visibleSkills(){
+  const q = $('#q').value.trim().toLowerCase();
+  const src = $('#srcFilter').value, pkg = $('#pkgFilter').value;
+  return state.store.skills.filter(s =>
+    (!src || s.source === src) &&
+    (!pkg || s.package === pkg) &&
+    (!q || s.name.toLowerCase().includes(q) ||
+     (s.description || '').toLowerCase().includes(q)));
+}
+
+function renderSkills(){
+  sel = new Set([...sel].filter(n => state.store.skills.some(s => s.name === n)));
+  const rows = visibleSkills().map(s => {
+    const orphanFix = s.source === 'orphan'
+      ? `<br><button class="mini" data-action="mark-authored" data-name="${esc(s.name)}">标记自作</button>
+         <button class="mini" data-action="ext-open" data-name="${esc(s.name)}">登记 external</button>`
+      : '';
+    const extWarn = s.external && !s.external.symlinkOk
+      ? ' <span class="badge b-err">链接失效</span>' : '';
+    const linked = s.linkedIn.length
+      ? `<span title="${esc(s.linkedIn.join('\n'))}">${s.linkedIn.length} 处</span>` : '—';
+    return `<tr>
+      <td><input type="checkbox" class="pick" data-name="${esc(s.name)}"
+           ${sel.has(s.name) ? 'checked' : ''}></td>
+      <td class="name" data-action="open-skill" data-name="${esc(s.name)}">${esc(s.name)}
+        <div class="desc">${esc(s.description || '')}</div></td>
+      <td><span class="badge b-${s.source}">${s.source}</span>${extWarn}${orphanFix}</td>
+      <td>${linked}</td>
+    </tr>`;
+  });
+  $('#skillsBody').innerHTML = rows.join('') ||
+    '<tr><td colspan="4" style="color:var(--dim)">没有匹配的 skill</td></tr>';
+  $('#nonSkillLine').textContent = state.store.nonSkillDirs.length
+    ? '忽略（无 SKILL.md）：' + state.store.nonSkillDirs.join('、') : '';
+  renderLinkBar();
+}
+
+function renderLinkBar(){
+  $('#selCount').textContent = sel.size;
+  $('#linkBar').classList.toggle('on', sel.size > 0);
+  const cur = $('#linkTarget').value;
+  $('#linkTarget').innerHTML =
+    state.projects.map(p => `<option value="${esc(p.path)}">${esc(base(p.path))} — ${esc(p.path)}</option>`).join('') +
+    '<option value="__global__">GLOBAL（~/.agents + ~/.claude）</option>' +
+    '<option value="__new__">新路径…</option>';
+  if ([...$('#linkTarget').options].some(o => o.value === cur)) $('#linkTarget').value = cur;
+  $('#newPath').style.display = $('#linkTarget').value === '__new__' ? 'inline-block' : 'none';
+}
+
+function projectCard(p){
+  const items = p.links.map(l => `
+    <li><span class="lname">${esc(l.name)}</span>
+      ${l.ok ? '' : '<span class="badge b-warn">失效</span>'}
+      ${l.intoStore ? '' : '<span class="badge b-external" title="不指向本 store">外部</span>'}
+      <button class="mini danger" data-action="unlink-one"
+        data-proj="${esc(p.path)}" data-name="${esc(l.name)}">✕</button></li>`).join('');
+  return `<div class="card">
+    <div class="cardhead"><span class="pname">${esc(base(p.path))}</span>
+      <span class="ppath">${esc(p.path)}</span>
+      ${p.exists ? '' : '<span class="badge b-err">目录不存在</span>'}</div>
+    <ul class="plinks">${items || '<li style="color:var(--dim)">无链接</li>'}</ul>
+    <div class="cardfoot">
+      <button class="mini" data-action="prune-proj" data-proj="${esc(p.path)}">Prune</button>
+      <button class="mini danger" data-action="dereg" data-proj="${esc(p.path)}">取消注册</button>
+    </div></div>`;
+}
+
+function renderProjects(){
+  const g = state.global.links.map(l => `
+    <li><span class="lname">${esc(l.name)}</span>
+      ${l.ok ? '' : '<span class="badge b-warn">失效</span>'}
+      <button class="mini danger" data-action="unlink-one" data-global="1"
+        data-name="${esc(l.name)}">✕</button></li>`).join('');
+  const globalCard = `<div class="card">
+    <div class="cardhead"><span class="pname">GLOBAL</span>
+      <span class="ppath">~/.agents/skills + ~/.claude/skills（仅列指向本 store 的）</span></div>
+    <ul class="plinks">${g || '<li style="color:var(--dim)">无链接</li>'}</ul>
+    <div class="cardfoot">
+      <button class="mini" data-action="prune-global">Prune</button>
+    </div></div>`;
+  $('#projectCards').innerHTML = globalCard + state.projects.map(projectCard).join('') +
+    (state.projects.length ? '' :
+     '<div class="dimline">links.txt 中还没有注册任何项目</div>');
+}
+
+/* ---------- drawer ---------- */
+
+async function openDrawer(name){
+  const s = state.store.skills.find(x => x.name === name);
+  if (!s) return;
+  $('#drawerTitle').innerHTML = `${esc(s.name)} <span class="badge b-${s.source}">${s.source}</span>`;
+  let kv = '';
+  if (s.package) kv += `<b>包</b><span>${esc(s.package)}</span>`;
+  if (s.external){
+    kv += `<b>repo</b><span>${esc(s.external.repo)}</span>`;
+    if (s.external.ref) kv += `<b>ref</b><span>${esc(s.external.ref)}</span>`;
+    kv += `<b>路径</b><span>${esc(s.external.skillPath)}</span>`;
+    kv += `<b>clone</b><span>${esc(s.external.cloneTarget || '（符号链接缺失）')}
+           ${s.external.symlinkOk ? '' : ' <span class="badge b-err">失效</span>'}</span>`;
+  }
+  const linked = s.linkedIn.map(p => {
+    const g = p === 'GLOBAL';
+    return `<li><span class="lname">${esc(p)}</span>
+      <button class="mini danger" data-action="unlink-one" data-name="${esc(s.name)}"
+        ${g ? 'data-global="1"' : `data-proj="${esc(p)}"`}>✕ unlink</button></li>`;
+  }).join('');
+  const extActions = s.source === 'external'
+    ? `<div class="cardfoot"><button class="mini danger" data-action="ext-remove"
+         data-name="${esc(s.name)}">移除 external（remove-external.sh）</button></div>` : '';
+  $('#drawerBody').innerHTML = `<div class="kv">${kv}</div>
+    <div><b style="font-size:12px;color:var(--dim)">被链接于</b>
+      <ul class="plinks">${linked || '<li style="color:var(--dim)">未被任何项目链接</li>'}</ul></div>
+    ${extActions}`;
+  $('#drawerMd').textContent = '加载 SKILL.md…';
+  $('#drawer').showModal();
+  try {
+    $('#drawerMd').textContent = await (await api(`/api/skill/${name}/skillmd`)).text();
+  } catch (e) {
+    $('#drawerMd').textContent = '读取失败：' + e.message;
+  }
+}
+
+/* ---------- path autocomplete ---------- */
+
+let compTimer = null;
+function attachComplete(input){
+  input.addEventListener('input', () => {
+    clearTimeout(compTimer);
+    compTimer = setTimeout(async () => {
+      try {
+        const r = await (await api('/api/complete-path?prefix=' +
+                                   encodeURIComponent(input.value))).json();
+        $('#pathOpts').innerHTML =
+          r.dirs.map(d => `<option value="${esc(d)}"></option>`).join('');
+      } catch (e) {}
+    }, 200);
+  });
+}
+
+/* ---------- actions ---------- */
+
+function unlinkBody(ds, name){
+  return ds.global ? {global: true, items: [name]} : {target: ds.proj, items: [name]};
+}
+
+const actions = {
+  'refresh': () => getState().catch(e => banner('刷新失败：' + e.message)),
+  'doctor': () => run('doctor', '/api/doctor'),
+  'gen': () => run('gen-packages', '/api/gen-packages'),
+  'sync': () => run('sync-external', '/api/external/sync', {}),
+  'health-toggle': () => {
+    const h = $('#healthOut');
+    h.style.display = h.style.display === 'block' ? 'none' : 'block';
+  },
+  'log-toggle': el => {
+    const b = el.closest('.logentry').querySelector('.logbody');
+    b.style.display = b.style.display === 'block' ? 'none' : 'block';
+  },
+  'open-skill': el => openDrawer(el.dataset.name),
+  'drawer-close': () => $('#drawer').close(),
+  'mark-authored': el => run('mark-authored ' + el.dataset.name,
+                             '/api/mark-authored', {names: [el.dataset.name]}),
+  'link-selected': () => {
+    const items = [...sel];
+    if (!items.length) return;
+    const t = $('#linkTarget').value;
+    const body = {items, force: $('#linkForce').checked};
+    if (t === '__global__') body.global = true;
+    else if (t === '__new__'){
+      body.target = $('#newPath').value.trim();
+      if (!body.target) return alert('请输入目标项目的绝对路径');
+    } else body.target = t;
+    run('link → ' + (body.global ? 'GLOBAL' : base(body.target)), '/api/link', body)
+      .then(res => { if (res && res.exitCode === 0){ sel.clear(); renderSkills(); } });
+  },
+  'unlink-one': el => {
+    $('#drawer').close();
+    const name = el.dataset.name;
+    confirmViaDryRun(`unlink ${name} ← ${el.dataset.global ? 'GLOBAL' : base(el.dataset.proj)}`,
+                     '/api/unlink', unlinkBody(el.dataset, name));
+  },
+  'prune-proj': el => confirmViaDryRun('prune ' + base(el.dataset.proj),
+                                       '/api/prune', {target: el.dataset.proj}),
+  'prune-global': () => confirmViaDryRun('prune GLOBAL', '/api/prune', {global: true}),
+  'prune-all': () => confirmViaDryRun('prune-all（全部项目）', '/api/prune-all', {}),
+  'dereg': el => showModal('取消注册项目',
+      `将从 links.txt 移除：\n${el.dataset.proj}\n\n（不会删除项目里已有的链接，只是 prune-all 不再管它）`,
+      () => run('deregister ' + base(el.dataset.proj), '/api/register',
+                {paths: [el.dataset.proj], remove: true})),
+  'register-submit': () => {
+    const p = $('#regPath').value.trim();
+    if (!p) return alert('请输入项目绝对路径');
+    run('register ' + base(p), '/api/register', {paths: [p]})
+      .then(res => { if (res && res.exitCode === 0) $('#regPath').value = ''; });
+  },
+  'ext-open': el => {
+    if (el.dataset.name) $('#extName').value = el.dataset.name;
+    $('#extDialog').showModal();
+  },
+  'ext-cancel': () => $('#extDialog').close(),
+  'ext-submit': () => {
+    const body = {
+      repo: $('#extRepo').value.trim(),
+      skillPath: $('#extPath').value.trim(),
+      force: $('#extForce').checked,
+    };
+    if ($('#extName').value.trim()) body.name = $('#extName').value.trim();
+    if ($('#extRef').value.trim()) body.ref = $('#extRef').value.trim();
+    if (!body.repo || !body.skillPath) return alert('repo 和 skill 路径必填');
+    $('#extDialog').close();
+    run('add-external ' + (body.name || body.skillPath), '/api/external/add', body);
+  },
+  'ext-remove': el => {
+    $('#drawer').close();
+    showModal('移除 External Skill',
+      `将移除 ${el.dataset.name}：删除 store 符号链接、external.json 条目和 .gitignore 行。\n本地 clone 不会被删除。`,
+      () => run('remove-external ' + el.dataset.name,
+                '/api/external/remove', {names: [el.dataset.name]}));
+  },
+  'modal-cancel': () => { modalFn = null; $('#modal').close(); },
+  'modal-ok': () => { const f = modalFn; modalFn = null; $('#modal').close(); if (f) f(); },
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el && actions[el.dataset.action]) actions[el.dataset.action](el);
+});
+
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('pick')){
+    e.target.checked ? sel.add(e.target.dataset.name) : sel.delete(e.target.dataset.name);
+    renderLinkBar();
+  } else if (e.target.id === 'selAll'){
+    visibleSkills().forEach(s => e.target.checked ? sel.add(s.name) : sel.delete(s.name));
+    renderSkills();
+  } else if (e.target.id === 'linkTarget'){
+    $('#newPath').style.display = e.target.value === '__new__' ? 'inline-block' : 'none';
+  } else if (e.target.id === 'srcFilter' || e.target.id === 'pkgFilter'){
+    renderSkills();
+  }
+});
+$('#q').addEventListener('input', renderSkills);
+attachComplete($('#newPath'));
+attachComplete($('#regPath'));
+
+/* ---------- boot ---------- */
+
+if (!token){
+  banner('缺少访问令牌：请通过 scripts/ui/serve.sh 打开本页面（URL 需带 #t=<token>）。');
+} else {
+  getState().catch(e => banner('加载失败：' + e.message));
+}
+</script>
+</body>
+</html>

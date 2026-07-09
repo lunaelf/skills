@@ -12,6 +12,9 @@ links.txt
 # Skill dev workspaces (eval/benchmark artifacts, not skills themselves)
 .agents/skills/*-workspace/
 
+# Python (scripts/ui/server.py)
+__pycache__/
+
 # Node / npx skills
 node_modules/
 npm-debug.log*

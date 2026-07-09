@@ -51,6 +51,7 @@ All scripts take `-h/--help`. Paths assume repo root as CWD.
 
 ```bash
 # Inventory / health
+scripts/ui/serve.sh [--port <n>]        # local web UI: dashboard + link/unlink/external ops (wraps the scripts)
 scripts/test.sh                         # smoke tests (run on a repo copy; mutates nothing real)
 scripts/check.sh                        # doctor + gen --check; CI / pre-commit gate
 scripts/store/doctor.sh                 # check store vs all 3 manifests; exit!=0 on mismatch
@@ -97,6 +98,12 @@ After any change to the store (npx add/remove, authoring, external add), run `do
 - Self-referential paths appear in many places: usage headers, runtime fix-it messages, the strings
   `gen-packages.sh` writes into `PACKAGES.md`, and the `ensure_gitignore` marker. If you move or
   rename a script, update all of them (and re-run `gen-packages.sh`, or `--check` will fail).
+- `scripts/ui/` is a zero-dependency local web UI (`serve.sh` -> python3-stdlib `server.py` +
+  static `index.html`). Contract: reads come from the manifests + directory scans; every mutation
+  execs one of the scripts above via a fixed argv mapping in `server.py` (`POST_ROUTES`), so the
+  scripts stay the single source of truth. If you add/rename a script or change its flags, update
+  the matching endpoint builder and the `== ui ==` checks in `test.sh`. Auth is a per-run token
+  from `serve.sh`; the server binds 127.0.0.1 and whitelists every argument.
 - `scripts/test.sh` is the smoke suite: it runs the scripts against a throwaway COPY of the repo
   (so `external.json`/`PACKAGES.md`/`links.txt` are never mutated), a fake `$HOME` for global tests,
   and a local `git init` "remote" for external tests — no network. Add a check there when you change

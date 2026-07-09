@@ -147,6 +147,35 @@ tn "external symlink gone" test -L "$R/.agents/skills/foo"
 tn "external out of manifest" grep -q '"foo"' "$R/external.json"
 unset SKILLS_CODE_ROOT
 
+echo "== ui =="
+if command -v python3 >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
+  UIP="$(mktmp)"
+  UT="test-token-$$"
+  UO="$BASE/ui.out"
+  SKILLS_UI_TOKEN="$UT" SKILLS_CODE_ROOT="$BASE" \
+    python3 "$R/scripts/ui/server.py" --port 0 >"$UO" 2>/dev/null &
+  UIPID=$!
+  UIURL=""
+  for _ in $(seq 1 50); do
+    UIURL="$(sed -n 's/^ready: //p' "$UO")"
+    [ -n "$UIURL" ] && break
+    sleep 0.1
+  done
+  t   "server ready"        test -n "$UIURL"
+  teq "state w/o token 401" "$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' "${UIURL}api/state")" "401"
+  t   "state with token"    sh -c "curl -sf --max-time 30 -H 'X-Auth-Token: $UT' '${UIURL}api/state' | grep -q '\"doctor\"'"
+  t   "link via api"        sh -c "curl -sf --max-time 30 -X POST -H 'X-Auth-Token: $UT' -H 'Content-Type: application/json' -d '{\"target\":\"$UIP\",\"items\":[\"tdd\"]}' '${UIURL}api/link' | grep -q '\"exitCode\": 0'"
+  t   "api link created"    test -L "$UIP/.agents/skills/tdd"
+  tn  "flag smuggled as name rejected" curl -sf --max-time 30 -X POST -H "X-Auth-Token: $UT" -H 'Content-Type: application/json' -d '{"target":"'"$UIP"'","items":["-g"]}' "${UIURL}api/link"
+  tn  "target outside roots rejected"  curl -sf --max-time 30 -X POST -H "X-Auth-Token: $UT" -H 'Content-Type: application/json' -d '{"target":"/etc","items":["tdd"]}' "${UIURL}api/link"
+  t   "unlink via api"      sh -c "curl -sf --max-time 30 -X POST -H 'X-Auth-Token: $UT' -H 'Content-Type: application/json' -d '{\"target\":\"$UIP\",\"items\":[\"tdd\"]}' '${UIURL}api/unlink' | grep -q '\"exitCode\": 0'"
+  tn  "api link removed"    test -L "$UIP/.agents/skills/tdd"
+  kill "$UIPID" 2>/dev/null
+  wait "$UIPID" 2>/dev/null || :
+else
+  echo "  skip: python3/curl not available"
+fi
+
 echo "== consistency =="
 rm -f "$R/links.txt"
 t "doctor passes on clean copy" "$R/scripts/store/doctor.sh"
