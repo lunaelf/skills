@@ -68,6 +68,11 @@ td.name:hover{color:var(--acc)}
 
 .card{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px}
 .cardhead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+summary.cardhead{cursor:pointer;list-style:none}
+summary.cardhead::-webkit-details-marker{display:none}
+summary.cardhead::before{content:'▸';flex:none;font-size:11px;color:var(--dim)}
+details[open]>summary.cardhead::before{content:'▾'}
+.lcount{font-size:12px;color:var(--dim);white-space:nowrap}
 .pname{font-weight:600}
 .ppath{font-size:12px;color:var(--dim);word-break:break-all}
 .plinks{list-style:none;margin:8px 0 0;padding:0}
@@ -212,6 +217,7 @@ const $ = s => document.querySelector(s);
 const token = new URLSearchParams(location.hash.slice(1)).get('t') || '';
 let state = null;
 let sel = new Set();
+const expanded = new Set();   // project card keys the user unfolded; survives re-render
 let busy = false;
 let modalFn = null;
 
@@ -384,15 +390,16 @@ function projectCard(p){
       ${l.intoStore ? '' : '<span class="badge b-external" title="不指向本 store">外部</span>'}
       <button class="mini danger" data-action="unlink-one"
         data-proj="${esc(p.path)}" data-name="${esc(l.name)}">✕</button></li>`).join('');
-  return `<div class="card">
-    <div class="cardhead"><span class="pname">${esc(base(p.path))}</span>
+  return `<details class="card" data-key="${esc(p.path)}" ${expanded.has(p.path) ? 'open' : ''}>
+    <summary class="cardhead"><span class="pname">${esc(base(p.path))}</span>
       <span class="ppath">${esc(p.path)}</span>
-      ${p.exists ? '' : '<span class="badge b-err">目录不存在</span>'}</div>
+      <span class="lcount">${p.links.length} 链接</span>
+      ${p.exists ? '' : '<span class="badge b-err">目录不存在</span>'}</summary>
     <ul class="plinks">${items || '<li style="color:var(--dim)">无链接</li>'}</ul>
     <div class="cardfoot">
       <button class="mini" data-action="prune-proj" data-proj="${esc(p.path)}">Prune</button>
       <button class="mini danger" data-action="dereg" data-proj="${esc(p.path)}">取消注册</button>
-    </div></div>`;
+    </div></details>`;
 }
 
 function renderProjects(){
@@ -401,13 +408,14 @@ function renderProjects(){
       ${l.ok ? '' : '<span class="badge b-warn">失效</span>'}
       <button class="mini danger" data-action="unlink-one" data-global="1"
         data-name="${esc(l.name)}">✕</button></li>`).join('');
-  const globalCard = `<div class="card">
-    <div class="cardhead"><span class="pname">GLOBAL</span>
-      <span class="ppath">~/.agents/skills + ~/.claude/skills（仅列指向本 store 的）</span></div>
+  const globalCard = `<details class="card" data-key="GLOBAL" ${expanded.has('GLOBAL') ? 'open' : ''}>
+    <summary class="cardhead"><span class="pname">GLOBAL</span>
+      <span class="ppath">~/.agents/skills + ~/.claude/skills（仅列指向本 store 的）</span>
+      <span class="lcount">${state.global.links.length} 链接</span></summary>
     <ul class="plinks">${g || '<li style="color:var(--dim)">无链接</li>'}</ul>
     <div class="cardfoot">
       <button class="mini" data-action="prune-global">Prune</button>
-    </div></div>`;
+    </div></details>`;
   $('#projectCards').innerHTML = globalCard + state.projects.map(projectCard).join('') +
     (state.projects.length ? '' :
      '<div class="dimline">links.txt 中还没有注册任何项目</div>');
@@ -555,6 +563,13 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-action]');
   if (el && actions[el.dataset.action]) actions[el.dataset.action](el);
 });
+
+// toggle doesn't bubble — capture it to remember which cards the user unfolded
+document.addEventListener('toggle', e => {
+  const d = e.target;
+  if (d.tagName === 'DETAILS' && d.dataset.key)
+    d.open ? expanded.add(d.dataset.key) : expanded.delete(d.dataset.key);
+}, true);
 
 document.addEventListener('change', e => {
   if (e.target.classList.contains('pick')){
