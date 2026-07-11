@@ -251,8 +251,12 @@ def val_name(s):
 
 
 def val_target(v):
-    if not isinstance(v, str) or not v.startswith('/'):
-        raise ApiError(400, 'target must be an absolute path')
+    if not isinstance(v, str):
+        raise ApiError(400, 'target must be an absolute path (or ~/…)')
+    if v.startswith('~'):
+        v = os.path.expanduser(v)
+    if not v.startswith('/'):
+        raise ApiError(400, 'target must be an absolute path (or ~/…)')
     q = os.path.normpath(v)
     if q in read_plain_lines(REPO_ROOT / 'links.txt'):
         return q

@@ -152,7 +152,7 @@ if command -v python3 >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
   UIP="$(mktmp)"
   UT="test-token-$$"
   UO="$BASE/ui.out"
-  SKILLS_UI_TOKEN="$UT" SKILLS_CODE_ROOT="$BASE" \
+  SKILLS_UI_TOKEN="$UT" SKILLS_CODE_ROOT="$BASE" HOME="$BASE" \
     python3 "$R/scripts/ui/server.py" --port 0 >"$UO" 2>/dev/null &
   UIPID=$!
   UIURL=""
@@ -168,6 +168,9 @@ if command -v python3 >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
   t   "api link created"    test -L "$UIP/.agents/skills/tdd"
   tn  "flag smuggled as name rejected" curl -sf --max-time 30 -X POST -H "X-Auth-Token: $UT" -H 'Content-Type: application/json' -d '{"target":"'"$UIP"'","items":["-g"]}' "${UIURL}api/link"
   tn  "target outside roots rejected"  curl -sf --max-time 30 -X POST -H "X-Auth-Token: $UT" -H 'Content-Type: application/json' -d '{"target":"/etc","items":["tdd"]}' "${UIURL}api/link"
+  UTD="$(mktmp)"
+  t   "tilde target via api" sh -c "curl -sf --max-time 30 -X POST -H 'X-Auth-Token: $UT' -H 'Content-Type: application/json' -d '{\"paths\":[\"~/${UTD##*/}\"]}' '${UIURL}api/register' | grep -q '\"exitCode\": 0'"
+  t   "tilde expanded in links.txt" grep -qxF "$UTD" "$R/links.txt"
   t   "unlink via api"      sh -c "curl -sf --max-time 30 -X POST -H 'X-Auth-Token: $UT' -H 'Content-Type: application/json' -d '{\"target\":\"$UIP\",\"items\":[\"tdd\"]}' '${UIURL}api/unlink' | grep -q '\"exitCode\": 0'"
   tn  "api link removed"    test -L "$UIP/.agents/skills/tdd"
   kill "$UIPID" 2>/dev/null

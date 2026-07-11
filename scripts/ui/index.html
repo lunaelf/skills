@@ -144,7 +144,7 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
     <div id="linkBar">
       <span>已选 <b id="selCount">0</b> 个 → 链接到</span>
       <select id="linkTarget"></select>
-      <input id="newPath" list="pathOpts" placeholder="/绝对路径…（可补全）">
+      <input id="newPath" list="pathOpts" placeholder="/绝对路径 或 ~/…（可补全）">
       <label><input type="checkbox" id="linkForce"> force</label>
       <button class="primary" data-action="link-selected">链接</button>
     </div>
@@ -154,7 +154,7 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
     <h2>Projects</h2>
     <div id="projectCards"></div>
     <div class="rowform">
-      <input id="regPath" list="pathOpts" placeholder="注册新项目：/绝对路径…（可补全）">
+      <input id="regPath" list="pathOpts" placeholder="注册新项目：/绝对路径 或 ~/…（可补全）">
       <button data-action="register-submit">注册项目</button>
     </div>
     <div class="rowform">
