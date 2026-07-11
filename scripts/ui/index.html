@@ -55,6 +55,11 @@ th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertic
 th{font-size:12px;color:var(--dim);font-weight:600;white-space:nowrap}
 td.name{font-weight:600;cursor:pointer;white-space:nowrap}
 td.name:hover{color:var(--acc)}
+tr.grouphead td{background:#f4f6fa}
+td.glabel{cursor:pointer;user-select:none}
+td.glabel:hover{color:var(--acc)}
+.gcaret{display:inline-block;width:14px;font-size:11px;color:var(--dim)}
+.gcount{font-size:12px;color:var(--dim);margin-left:6px;font-weight:400}
 .desc{font-size:12px;color:var(--dim);font-weight:400;max-width:340px;overflow:hidden;
       text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .mini{font-size:12px;padding:1px 7px;margin-left:4px}
@@ -218,6 +223,7 @@ const token = new URLSearchParams(location.hash.slice(1)).get('t') || '';
 let state = null;
 let sel = new Set();
 const expanded = new Set();   // project card keys the user unfolded; survives re-render
+const openGroups = new Set(); // skill groups (package/source) the user unfolded
 let busy = false;
 let modalFn = null;
 
@@ -344,27 +350,53 @@ function visibleSkills(){
      (s.description || '').toLowerCase().includes(q)));
 }
 
+function skillRow(s){
+  const orphanFix = s.source === 'orphan'
+    ? `<br><button class="mini" data-action="mark-authored" data-name="${esc(s.name)}">标记自作</button>
+       <button class="mini" data-action="ext-open" data-name="${esc(s.name)}">登记 external</button>`
+    : '';
+  const extWarn = s.external && !s.external.symlinkOk
+    ? ' <span class="badge b-err">链接失效</span>' : '';
+  const linked = s.linkedIn.length
+    ? `<span title="${esc(s.linkedIn.join('\n'))}">${s.linkedIn.length} 处</span>` : '—';
+  return `<tr>
+    <td><input type="checkbox" class="pick" data-name="${esc(s.name)}"
+         ${sel.has(s.name) ? 'checked' : ''}></td>
+    <td class="name" data-action="open-skill" data-name="${esc(s.name)}">${esc(s.name)}
+      <div class="desc">${esc(s.description || '')}</div></td>
+    <td><span class="badge b-${s.source}">${s.source}</span>${extWarn}${orphanFix}</td>
+    <td>${linked}</td>
+  </tr>`;
+}
+
+const skillGroup = s => s.package || s.source;
+const tailGroups = ['authored', 'external', 'orphan'];  // non-package groups, listed last
+
 function renderSkills(){
   sel = new Set([...sel].filter(n => state.store.skills.some(s => s.name === n)));
-  const rows = visibleSkills().map(s => {
-    const orphanFix = s.source === 'orphan'
-      ? `<br><button class="mini" data-action="mark-authored" data-name="${esc(s.name)}">标记自作</button>
-         <button class="mini" data-action="ext-open" data-name="${esc(s.name)}">登记 external</button>`
-      : '';
-    const extWarn = s.external && !s.external.symlinkOk
-      ? ' <span class="badge b-err">链接失效</span>' : '';
-    const linked = s.linkedIn.length
-      ? `<span title="${esc(s.linkedIn.join('\n'))}">${s.linkedIn.length} 处</span>` : '—';
-    return `<tr>
-      <td><input type="checkbox" class="pick" data-name="${esc(s.name)}"
-           ${sel.has(s.name) ? 'checked' : ''}></td>
-      <td class="name" data-action="open-skill" data-name="${esc(s.name)}">${esc(s.name)}
-        <div class="desc">${esc(s.description || '')}</div></td>
-      <td><span class="badge b-${s.source}">${s.source}</span>${extWarn}${orphanFix}</td>
-      <td>${linked}</td>
-    </tr>`;
-  });
-  $('#skillsBody').innerHTML = rows.join('') ||
+  // with an active search/filter, open everything so the matches are visible
+  const forceOpen = !!($('#q').value.trim() || $('#srcFilter').value || $('#pkgFilter').value);
+  const groups = new Map();
+  for (const s of visibleSkills()){
+    const k = skillGroup(s);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(s);
+  }
+  const rank = k => (tailGroups.includes(k) ? '1' + tailGroups.indexOf(k) : '0' + k);
+  const html = [...groups.keys()].sort((a, b) => rank(a).localeCompare(rank(b))).map(k => {
+    const members = groups.get(k);
+    const open = forceOpen || openGroups.has(k);
+    const title = tailGroups.includes(k)
+      ? `<span class="badge b-${k}">${k}</span>` : `<b>${esc(k)}</b>`;
+    return `<tr class="grouphead">
+      <td><input type="checkbox" class="gpick" data-group="${esc(k)}"
+           ${members.every(s => sel.has(s.name)) ? 'checked' : ''}></td>
+      <td colspan="3" class="glabel" data-action="group-toggle" data-group="${esc(k)}">
+        <span class="gcaret">${open ? '▾' : '▸'}</span>${title}
+        <span class="gcount">${members.length} 个 skill</span></td>
+    </tr>` + (open ? members.map(skillRow).join('') : '');
+  }).join('');
+  $('#skillsBody').innerHTML = html ||
     '<tr><td colspan="4" style="color:var(--dim)">没有匹配的 skill</td></tr>';
   $('#nonSkillLine').textContent = state.store.nonSkillDirs.length
     ? '忽略（无 SKILL.md）：' + state.store.nonSkillDirs.join('、') : '';
@@ -494,6 +526,11 @@ const actions = {
     const b = el.closest('.logentry').querySelector('.logbody');
     b.style.display = b.style.display === 'block' ? 'none' : 'block';
   },
+  'group-toggle': el => {
+    const k = el.dataset.group;
+    openGroups.has(k) ? openGroups.delete(k) : openGroups.add(k);
+    renderSkills();
+  },
   'open-skill': el => openDrawer(el.dataset.name),
   'drawer-close': () => $('#drawer').close(),
   'mark-authored': el => run('mark-authored ' + el.dataset.name,
@@ -574,7 +611,11 @@ document.addEventListener('toggle', e => {
 document.addEventListener('change', e => {
   if (e.target.classList.contains('pick')){
     e.target.checked ? sel.add(e.target.dataset.name) : sel.delete(e.target.dataset.name);
-    renderLinkBar();
+    renderSkills();   // keep the group checkbox in sync
+  } else if (e.target.classList.contains('gpick')){
+    visibleSkills().filter(s => skillGroup(s) === e.target.dataset.group)
+      .forEach(s => e.target.checked ? sel.add(s.name) : sel.delete(s.name));
+    renderSkills();
   } else if (e.target.id === 'selAll'){
     visibleSkills().forEach(s => e.target.checked ? sel.add(s.name) : sel.delete(s.name));
     renderSkills();
