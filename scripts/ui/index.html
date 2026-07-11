@@ -127,44 +127,45 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
   <span id="doctorBadge" class="badge clickable" data-action="health-toggle">doctor: …</span>
   <span id="pkgBadge" class="badge">PACKAGES.md: …</span>
   <span class="spacer"></span>
-  <button data-action="doctor">重跑 Doctor</button>
+  <button data-action="doctor" data-i18n="btnDoctor"></button>
   <button data-action="gen" id="btnGen">Gen PACKAGES</button>
   <button data-action="sync">Sync External ⟳</button>
-  <button data-action="refresh">刷新</button>
+  <button data-action="refresh" data-i18n="btnRefresh"></button>
+  <button class="safe" id="langBtn" data-action="lang-toggle"></button>
 </header>
 <pre id="healthOut"></pre>
 
 <main>
   <section class="pane" id="skillsPane">
     <div class="panehead">
-      <h2>Skills（store 全量）</h2>
-      <button class="mini" data-action="ext-open">＋ 添加 External Skill</button>
+      <h2 data-i18n="skillsTitle"></h2>
+      <button class="mini" data-action="ext-open" data-i18n="addExternal"></button>
     </div>
     <div class="filters">
-      <input type="search" id="q" placeholder="按名称 / 描述过滤…">
+      <input type="search" id="q" data-i18n-ph="filterPh">
       <select id="srcFilter">
-        <option value="">来源：全部</option>
+        <option value="" data-i18n="srcAll"></option>
         <option value="npx">npx</option>
         <option value="authored">authored</option>
         <option value="external">external</option>
         <option value="orphan">orphan</option>
       </select>
-      <select id="pkgFilter"><option value="">包：全部</option></select>
+      <select id="pkgFilter"><option value="" data-i18n="pkgAll"></option></select>
     </div>
     <table>
       <thead><tr>
         <th><input type="checkbox" id="selAll"></th>
-        <th>名称</th><th>来源</th><th>被链接</th>
+        <th data-i18n="thName"></th><th data-i18n="thSource"></th><th data-i18n="thLinked"></th>
       </tr></thead>
       <tbody id="skillsBody"></tbody>
     </table>
     <div class="dimline" id="nonSkillLine"></div>
     <div id="linkBar">
-      <span>已选 <b id="selCount">0</b> 个 → 链接到</span>
+      <span id="selLabel"></span>
       <select id="linkTarget"></select>
-      <input id="newPath" list="pathOpts" placeholder="/绝对路径 或 ~/…（可补全）">
+      <input id="newPath" list="pathOpts" data-i18n-ph="newPathPh">
       <label><input type="checkbox" id="linkForce"> force</label>
-      <button class="primary" data-action="link-selected">链接</button>
+      <button class="primary" data-action="link-selected" data-i18n="linkBtn"></button>
     </div>
   </section>
 
@@ -172,17 +173,17 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
     <h2>Projects</h2>
     <div id="projectCards"></div>
     <div class="rowform">
-      <input id="regPath" list="pathOpts" placeholder="注册新项目：/绝对路径 或 ~/…（可补全）">
-      <button data-action="register-submit">注册项目</button>
+      <input id="regPath" list="pathOpts" data-i18n-ph="regPathPh">
+      <button data-action="register-submit" data-i18n="regBtn"></button>
     </div>
     <div class="rowform">
-      <button class="danger" data-action="prune-all">Prune All（全部项目）</button>
+      <button class="danger" data-action="prune-all" data-i18n="pruneAllBtn"></button>
     </div>
   </aside>
 </main>
 
 <section id="logPane">
-  <h2 style="font-size:14px">活动日志</h2>
+  <h2 style="font-size:14px" data-i18n="logTitle"></h2>
   <div id="log"></div>
 </section>
 
@@ -192,35 +193,35 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
   <h3 id="modalTitle"></h3>
   <pre id="modalPre"></pre>
   <menu>
-    <button class="safe" data-action="modal-cancel">取消</button>
-    <button class="primary" data-action="modal-ok" id="modalOkBtn">确认执行</button>
+    <button class="safe" data-action="modal-cancel" data-i18n="cancel"></button>
+    <button class="primary" data-action="modal-ok" id="modalOkBtn" data-i18n="confirmRun"></button>
   </menu>
 </dialog>
 
 <dialog id="extDialog">
-  <h3>添加 External Skill</h3>
-  <div class="field"><label>repo（owner/repo 或 git URL）</label>
+  <h3 data-i18n="extTitle"></h3>
+  <div class="field"><label data-i18n="extRepoLabel"></label>
     <input id="extRepo" placeholder="owner/repo"></div>
-  <div class="field"><label>skill 在仓库内的路径（含 SKILL.md 的目录）</label>
+  <div class="field"><label data-i18n="extPathLabel"></label>
     <input id="extPath" placeholder="skills/foo"></div>
-  <div class="field"><label>store 内名称（可选，默认取路径末段）</label>
+  <div class="field"><label data-i18n="extNameLabel"></label>
     <input id="extName"></div>
-  <div class="field"><label>分支 / 标签（可选）</label>
+  <div class="field"><label data-i18n="extRefLabel"></label>
     <input id="extRef"></div>
-  <label><input type="checkbox" id="extForce"> force（替换已存在的符号链接）</label>
+  <label><input type="checkbox" id="extForce"> <span data-i18n="extForceLabel"></span></label>
   <menu>
-    <button class="safe" data-action="ext-cancel">取消</button>
-    <button class="primary" data-action="ext-submit">添加</button>
+    <button class="safe" data-action="ext-cancel" data-i18n="cancel"></button>
+    <button class="primary" data-action="ext-submit" data-i18n="extAdd"></button>
   </menu>
 </dialog>
 
 <dialog id="drawer">
   <div style="display:flex;align-items:center;gap:8px">
     <h3 id="drawerTitle" style="flex:1;margin:0"></h3>
-    <button class="safe" data-action="drawer-close">关闭</button>
+    <button class="safe" data-action="drawer-close" data-i18n="close"></button>
   </div>
   <div id="drawerBody"></div>
-  <pre id="drawerMd">加载 SKILL.md…</pre>
+  <pre id="drawerMd"></pre>
 </dialog>
 
 <script>
@@ -233,6 +234,177 @@ const expanded = new Set();   // project card keys the user unfolded; survives r
 const foldedGroups = new Set(); // skill groups (package/source) the user folded
 let busy = false;
 let modalFn = null;
+
+/* ---------- i18n ---------- */
+
+const I18N = {
+  zh: {
+    btnDoctor: '重跑 Doctor',
+    btnRefresh: '刷新',
+    doctorOk: 'doctor: ok',
+    doctorBad: 'doctor: 异常（点击看输出）',
+    pkgFresh: 'PACKAGES.md: 最新',
+    pkgStale: 'PACKAGES.md: 过期',
+    skillsTitle: 'Skills（store 全量）',
+    addExternal: '＋ 添加 External Skill',
+    filterPh: '按名称 / 描述过滤…',
+    srcAll: '来源：全部',
+    pkgAll: '包：全部',
+    thName: '名称', thSource: '来源', thLinked: '被链接',
+    selLabel: '已选 {n} 个 → 链接到',
+    linkBtn: '链接',
+    newPathPh: '/绝对路径 或 ~/…（可补全）',
+    regPathPh: '注册新项目：/绝对路径 或 ~/…（可补全）',
+    regBtn: '注册项目',
+    pruneAllBtn: 'Prune All（全部项目）',
+    logTitle: '活动日志',
+    cancel: '取消',
+    confirmRun: '确认执行',
+    extTitle: '添加 External Skill',
+    extRepoLabel: 'repo（owner/repo 或 git URL）',
+    extPathLabel: 'skill 在仓库内的路径（含 SKILL.md 的目录）',
+    extNameLabel: 'store 内名称（可选，默认取路径末段）',
+    extRefLabel: '分支 / 标签（可选）',
+    extForceLabel: 'force（替换已存在的符号链接）',
+    extAdd: '添加',
+    close: '关闭',
+    loadingMd: '加载 SKILL.md…',
+    running: '运行中…',
+    failed: '失败',
+    busyMsg: '有操作正在执行，请稍候',
+    noToken: '缺少访问令牌：请通过 scripts/ui/serve.sh 打开本页面（URL 需带 #t=<token>）。',
+    loadFail: '加载失败：',
+    refreshFail: '刷新失败：',
+    readFail: '读取失败：',
+    markAuthored: '标记自作',
+    regExternal: '登记 external',
+    brokenLink: '链接失效',
+    linkedPlaces: '{n} 处',
+    groupSel: '{p}/{n} 已选',
+    groupCount: '{n} 个 skill',
+    noMatch: '没有匹配的 skill',
+    ignoredDirs: '忽略（无 SKILL.md）：',
+    listSep: '、',
+    globalOpt: 'GLOBAL（~/.agents + ~/.claude）',
+    newPathOpt: '新路径…',
+    nLinks: '{n} 链接',
+    dirMissing: '目录不存在',
+    noLinks: '无链接',
+    deregBtn: '取消注册',
+    globalPath: '~/.agents/skills + ~/.claude/skills（仅列指向本 store 的）',
+    noProjects: 'links.txt 中还没有注册任何项目',
+    kvPkg: '包', kvPath: '路径',
+    symlinkMissing: '（符号链接缺失）',
+    broken: '失效',
+    foreign: '外部',
+    foreignTip: '不指向本 store',
+    linkedInTitle: '被链接于',
+    notLinked: '未被任何项目链接',
+    extRemoveBtn: '移除 external（remove-external.sh）',
+    needTargetPath: '请输入目标项目的绝对路径',
+    needProjPath: '请输入项目绝对路径',
+    needRepoPath: 'repo 和 skill 路径必填',
+    deregTitle: '取消注册项目',
+    deregText: '将从 links.txt 移除：\n{p}\n\n（不会删除项目里已有的链接，只是 prune-all 不再管它）',
+    extRemoveTitle: '移除 External Skill',
+    extRemoveText: '将移除 {name}：删除 store 符号链接、external.json 条目和 .gitignore 行。\n本地 clone 不会被删除。',
+    dryRunTag: '（dry-run 预览）',
+    dryRunEmpty: '（dry-run 无输出）',
+    pruneAllLabel: 'prune-all（全部项目）',
+  },
+  en: {
+    btnDoctor: 'Re-run Doctor',
+    btnRefresh: 'Refresh',
+    doctorOk: 'doctor: ok',
+    doctorBad: 'doctor: failing (click for output)',
+    pkgFresh: 'PACKAGES.md: up to date',
+    pkgStale: 'PACKAGES.md: stale',
+    skillsTitle: 'Skills (entire store)',
+    addExternal: '＋ Add external skill',
+    filterPh: 'Filter by name / description…',
+    srcAll: 'Source: all',
+    pkgAll: 'Package: all',
+    thName: 'Name', thSource: 'Source', thLinked: 'Linked',
+    selLabel: '{n} selected → link to',
+    linkBtn: 'Link',
+    newPathPh: '/absolute path or ~/… (autocompletes)',
+    regPathPh: 'Register a project: /absolute path or ~/… (autocompletes)',
+    regBtn: 'Register',
+    pruneAllBtn: 'Prune All (every project)',
+    logTitle: 'Activity log',
+    cancel: 'Cancel',
+    confirmRun: 'Confirm',
+    extTitle: 'Add external skill',
+    extRepoLabel: 'repo (owner/repo or git URL)',
+    extPathLabel: 'path of the skill inside the repo (the dir containing SKILL.md)',
+    extNameLabel: 'name in the store (optional, defaults to the last path segment)',
+    extRefLabel: 'branch / tag (optional)',
+    extForceLabel: 'force (replace an existing symlink)',
+    extAdd: 'Add',
+    close: 'Close',
+    loadingMd: 'Loading SKILL.md…',
+    running: 'running…',
+    failed: 'failed',
+    busyMsg: 'An operation is already running, please wait',
+    noToken: 'Missing access token: open this page via scripts/ui/serve.sh (the URL needs #t=<token>).',
+    loadFail: 'Failed to load: ',
+    refreshFail: 'Failed to refresh: ',
+    readFail: 'Failed to read: ',
+    markAuthored: 'Mark authored',
+    regExternal: 'Register external',
+    brokenLink: 'broken link',
+    linkedPlaces: '{n}',
+    groupSel: '{p}/{n} selected',
+    groupCount: '{n} skills',
+    noMatch: 'No matching skills',
+    ignoredDirs: 'Ignored (no SKILL.md): ',
+    listSep: ', ',
+    globalOpt: 'GLOBAL (~/.agents + ~/.claude)',
+    newPathOpt: 'New path…',
+    nLinks: '{n} links',
+    dirMissing: 'directory missing',
+    noLinks: 'no links',
+    deregBtn: 'Deregister',
+    globalPath: '~/.agents/skills + ~/.claude/skills (only links into this store)',
+    noProjects: 'No projects registered in links.txt yet',
+    kvPkg: 'package', kvPath: 'path',
+    symlinkMissing: '(symlink missing)',
+    broken: 'broken',
+    foreign: 'foreign',
+    foreignTip: 'does not point into this store',
+    linkedInTitle: 'Linked in',
+    notLinked: 'Not linked by any project',
+    extRemoveBtn: 'Remove external (remove-external.sh)',
+    needTargetPath: 'Enter the target project path',
+    needProjPath: 'Enter the project path',
+    needRepoPath: 'repo and skill path are required',
+    deregTitle: 'Deregister project',
+    deregText: 'Will remove from links.txt:\n{p}\n\n(existing links inside the project are kept; prune-all just stops covering it)',
+    extRemoveTitle: 'Remove external skill',
+    extRemoveText: 'Will remove {name}: the store symlink, its external.json entry and the .gitignore line.\nThe local clone is kept.',
+    dryRunTag: ' (dry-run preview)',
+    dryRunEmpty: '(dry-run produced no output)',
+    pruneAllLabel: 'prune-all (every project)',
+  },
+};
+
+let lang = localStorage.getItem('skillsUiLang') ||
+           ((navigator.language || '').startsWith('zh') ? 'zh' : 'en');
+
+function t(key, vars){
+  let s = (I18N[lang] && I18N[lang][key]) ?? I18N.zh[key] ?? key;
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll('{' + k + '}', v);
+  return s;
+}
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-ph]')) el.placeholder = t(el.dataset.i18nPh);
+  $('#langBtn').textContent = lang === 'zh' ? 'English' : '中文';
+  if (!$('#drawer').open) $('#drawerMd').textContent = t('loadingMd');
+  if (state) render();
+}
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -266,7 +438,7 @@ function logStart(label, res){
       <span>${new Date().toLocaleTimeString()}</span>
       <span>${esc(label)}</span>
       <span class="logcmd"></span>
-      <span class="badge b-warn logstat">运行中…</span>
+      <span class="badge b-warn logstat">${esc(t('running'))}</span>
     </div><pre class="logbody"></pre>`;
   $('#log').prepend(el);
   while ($('#log').children.length > 50) $('#log').lastChild.remove();
@@ -283,13 +455,13 @@ function logFinish(el, res){
 }
 function logFail(el, msg){
   const st = el.querySelector('.logstat');
-  st.textContent = '失败';
+  st.textContent = t('failed');
   st.className = 'badge logstat b-err';
   el.querySelector('.logbody').textContent = msg;
 }
 
 async function run(label, path, body){
-  if (busy){ banner('有操作正在执行，请稍候'); return null; }
+  if (busy){ banner(t('busyMsg')); return null; }
   busy = true;
   document.body.classList.add('busy');   // grey out mutation buttons; .safe ones stay usable
   const el = logStart(label);
@@ -313,10 +485,10 @@ function showModal(title, text, fn){
 
 /* dry-run first (via the script's own -n), show its real output, then confirm */
 async function confirmViaDryRun(label, path, body){
-  const preview = await run(label + '（dry-run 预览）', path, {...body, dryRun: true});
+  const preview = await run(label + t('dryRunTag'), path, {...body, dryRun: true});
   if (!preview) return;
   const out = (preview.stdout || '') + (preview.stderr || '');
-  showModal(label, out.trim() || '（dry-run 无输出）',
+  showModal(label, out.trim() || t('dryRunEmpty'),
             () => run(label, path, body));
 }
 
@@ -333,18 +505,18 @@ function render(){
 function renderHealth(){
   const d = state.health.doctor, p = state.health.packagesMd;
   const db = $('#doctorBadge');
-  db.textContent = d.exitCode === 0 ? 'doctor: ok' : 'doctor: 异常（点击看输出）';
+  db.textContent = d.exitCode === 0 ? t('doctorOk') : t('doctorBad');
   db.className = 'badge clickable ' + (d.exitCode === 0 ? 'b-ok' : 'b-err');
   $('#healthOut').textContent = (d.stdout || '') + (d.stderr || '');
   const pb = $('#pkgBadge');
-  pb.textContent = p.exitCode === 0 ? 'PACKAGES.md: 最新' : 'PACKAGES.md: 过期';
+  pb.textContent = p.exitCode === 0 ? t('pkgFresh') : t('pkgStale');
   pb.className = 'badge ' + (p.exitCode === 0 ? 'b-ok' : 'b-warn');
   $('#btnGen').classList.toggle('primary', p.exitCode !== 0);
 }
 
 function renderPkgFilter(){
   const cur = $('#pkgFilter').value;
-  $('#pkgFilter').innerHTML = '<option value="">包：全部</option>' +
+  $('#pkgFilter').innerHTML = `<option value="">${esc(t('pkgAll'))}</option>` +
     state.packages.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
   $('#pkgFilter').value = cur;
 }
@@ -361,13 +533,13 @@ function visibleSkills(){
 
 function skillRow(s){
   const orphanFix = s.source === 'orphan'
-    ? `<br><button class="mini" data-action="mark-authored" data-name="${esc(s.name)}">标记自作</button>
-       <button class="mini" data-action="ext-open" data-name="${esc(s.name)}">登记 external</button>`
+    ? `<br><button class="mini" data-action="mark-authored" data-name="${esc(s.name)}">${esc(t('markAuthored'))}</button>
+       <button class="mini" data-action="ext-open" data-name="${esc(s.name)}">${esc(t('regExternal'))}</button>`
     : '';
   const extWarn = s.external && !s.external.symlinkOk
-    ? ' <span class="badge b-err">链接失效</span>' : '';
+    ? ` <span class="badge b-err">${esc(t('brokenLink'))}</span>` : '';
   const linked = s.linkedIn.length
-    ? `<span title="${esc(s.linkedIn.join('\n'))}">${s.linkedIn.length} 处</span>` : '—';
+    ? `<span title="${esc(s.linkedIn.join('\n'))}">${esc(t('linkedPlaces', {n: s.linkedIn.length}))}</span>` : '—';
   return `<tr>
     <td><input type="checkbox" class="pick" data-name="${esc(s.name)}"
          ${sel.has(s.name) ? 'checked' : ''}></td>
@@ -403,11 +575,12 @@ function renderSkills(){
            ${picked === members.length ? 'checked' : ''}></td>
       <td colspan="3" class="glabel" tabindex="0" data-action="group-toggle" data-group="${esc(k)}">
         <span class="gcaret">${open ? '▾' : '▸'}</span>${title}
-        <span class="gcount">${picked ? `${picked}/${members.length} 已选` : `${members.length} 个 skill`}</span></td>
+        <span class="gcount">${esc(picked ? t('groupSel', {p: picked, n: members.length})
+                                          : t('groupCount', {n: members.length}))}</span></td>
     </tr>` + (open ? members.map(skillRow).join('') : '');
   }).join('');
   $('#skillsBody').innerHTML = html ||
-    '<tr><td colspan="4" style="color:var(--dim)">没有匹配的 skill</td></tr>';
+    `<tr><td colspan="4" style="color:var(--dim)">${esc(t('noMatch'))}</td></tr>`;
   for (const cb of document.querySelectorAll('.gpick')){   // indeterminate is a property, not an attribute
     const members = groups.get(cb.dataset.group) || [];
     const picked = members.filter(s => sel.has(s.name)).length;
@@ -419,18 +592,18 @@ function renderSkills(){
   sa.checked = all.length > 0 && pickedAll === all.length;
   sa.indeterminate = pickedAll > 0 && pickedAll < all.length;
   $('#nonSkillLine').textContent = state.store.nonSkillDirs.length
-    ? '忽略（无 SKILL.md）：' + state.store.nonSkillDirs.join('、') : '';
+    ? t('ignoredDirs') + state.store.nonSkillDirs.join(t('listSep')) : '';
   renderLinkBar();
 }
 
 function renderLinkBar(){
-  $('#selCount').textContent = sel.size;
+  $('#selLabel').textContent = t('selLabel', {n: sel.size});
   $('#linkBar').classList.toggle('on', sel.size > 0);
   const cur = $('#linkTarget').value;
   $('#linkTarget').innerHTML =
     state.projects.map(p => `<option value="${esc(p.path)}">${esc(base(p.path))} — ${esc(p.path)}</option>`).join('') +
-    '<option value="__global__">GLOBAL（~/.agents + ~/.claude）</option>' +
-    '<option value="__new__">新路径…</option>';
+    `<option value="__global__">${esc(t('globalOpt'))}</option>` +
+    `<option value="__new__">${esc(t('newPathOpt'))}</option>`;
   if ([...$('#linkTarget').options].some(o => o.value === cur)) $('#linkTarget').value = cur;
   $('#newPath').style.display = $('#linkTarget').value === '__new__' ? 'inline-block' : 'none';
 }
@@ -438,39 +611,39 @@ function renderLinkBar(){
 function projectCard(p){
   const items = p.links.map(l => `
     <li><span class="lname">${esc(l.name)}</span>
-      ${l.ok ? '' : '<span class="badge b-warn">失效</span>'}
-      ${l.intoStore ? '' : '<span class="badge b-external" title="不指向本 store">外部</span>'}
+      ${l.ok ? '' : `<span class="badge b-warn">${esc(t('broken'))}</span>`}
+      ${l.intoStore ? '' : `<span class="badge b-external" title="${esc(t('foreignTip'))}">${esc(t('foreign'))}</span>`}
       <button class="mini danger" data-action="unlink-one"
         data-proj="${esc(p.path)}" data-name="${esc(l.name)}">✕</button></li>`).join('');
   return `<details class="card" data-key="${esc(p.path)}" ${expanded.has(p.path) ? 'open' : ''}>
     <summary class="cardhead"><span class="pname">${esc(base(p.path))}</span>
       <span class="ppath">${esc(p.path)}</span>
-      <span class="lcount">${p.links.length} 链接</span>
-      ${p.exists ? '' : '<span class="badge b-err">目录不存在</span>'}</summary>
-    <ul class="plinks">${items || '<li style="color:var(--dim)">无链接</li>'}</ul>
+      <span class="lcount">${esc(t('nLinks', {n: p.links.length}))}</span>
+      ${p.exists ? '' : `<span class="badge b-err">${esc(t('dirMissing'))}</span>`}</summary>
+    <ul class="plinks">${items || `<li style="color:var(--dim)">${esc(t('noLinks'))}</li>`}</ul>
     <div class="cardfoot">
       <button class="mini" data-action="prune-proj" data-proj="${esc(p.path)}">Prune</button>
-      <button class="mini danger" data-action="dereg" data-proj="${esc(p.path)}">取消注册</button>
+      <button class="mini danger" data-action="dereg" data-proj="${esc(p.path)}">${esc(t('deregBtn'))}</button>
     </div></details>`;
 }
 
 function renderProjects(){
   const g = state.global.links.map(l => `
     <li><span class="lname">${esc(l.name)}</span>
-      ${l.ok ? '' : '<span class="badge b-warn">失效</span>'}
+      ${l.ok ? '' : `<span class="badge b-warn">${esc(t('broken'))}</span>`}
       <button class="mini danger" data-action="unlink-one" data-global="1"
         data-name="${esc(l.name)}">✕</button></li>`).join('');
   const globalCard = `<details class="card" data-key="GLOBAL" ${expanded.has('GLOBAL') ? 'open' : ''}>
     <summary class="cardhead"><span class="pname">GLOBAL</span>
-      <span class="ppath">~/.agents/skills + ~/.claude/skills（仅列指向本 store 的）</span>
-      <span class="lcount">${state.global.links.length} 链接</span></summary>
-    <ul class="plinks">${g || '<li style="color:var(--dim)">无链接</li>'}</ul>
+      <span class="ppath">${esc(t('globalPath'))}</span>
+      <span class="lcount">${esc(t('nLinks', {n: state.global.links.length}))}</span></summary>
+    <ul class="plinks">${g || `<li style="color:var(--dim)">${esc(t('noLinks'))}</li>`}</ul>
     <div class="cardfoot">
       <button class="mini" data-action="prune-global">Prune</button>
     </div></details>`;
   $('#projectCards').innerHTML = globalCard + state.projects.map(projectCard).join('') +
     (state.projects.length ? '' :
-     '<div class="dimline">links.txt 中还没有注册任何项目</div>');
+     `<div class="dimline">${esc(t('noProjects'))}</div>`);
 }
 
 /* ---------- drawer ---------- */
@@ -480,13 +653,13 @@ async function openDrawer(name){
   if (!s) return;
   $('#drawerTitle').innerHTML = `${esc(s.name)} <span class="badge b-${s.source}">${s.source}</span>`;
   let kv = '';
-  if (s.package) kv += `<b>包</b><span>${esc(s.package)}</span>`;
+  if (s.package) kv += `<b>${esc(t('kvPkg'))}</b><span>${esc(s.package)}</span>`;
   if (s.external){
     kv += `<b>repo</b><span>${esc(s.external.repo)}</span>`;
     if (s.external.ref) kv += `<b>ref</b><span>${esc(s.external.ref)}</span>`;
-    kv += `<b>路径</b><span>${esc(s.external.skillPath)}</span>`;
-    kv += `<b>clone</b><span>${esc(s.external.cloneTarget || '（符号链接缺失）')}
-           ${s.external.symlinkOk ? '' : ' <span class="badge b-err">失效</span>'}</span>`;
+    kv += `<b>${esc(t('kvPath'))}</b><span>${esc(s.external.skillPath)}</span>`;
+    kv += `<b>clone</b><span>${esc(s.external.cloneTarget || t('symlinkMissing'))}
+           ${s.external.symlinkOk ? '' : ` <span class="badge b-err">${esc(t('broken'))}</span>`}</span>`;
   }
   const linked = s.linkedIn.map(p => {
     const g = p === 'GLOBAL';
@@ -496,17 +669,17 @@ async function openDrawer(name){
   }).join('');
   const extActions = s.source === 'external'
     ? `<div class="cardfoot"><button class="mini danger" data-action="ext-remove"
-         data-name="${esc(s.name)}">移除 external（remove-external.sh）</button></div>` : '';
+         data-name="${esc(s.name)}">${esc(t('extRemoveBtn'))}</button></div>` : '';
   $('#drawerBody').innerHTML = `<div class="kv">${kv}</div>
-    <div><b style="font-size:12px;color:var(--dim)">被链接于</b>
-      <ul class="plinks">${linked || '<li style="color:var(--dim)">未被任何项目链接</li>'}</ul></div>
+    <div><b style="font-size:12px;color:var(--dim)">${esc(t('linkedInTitle'))}</b>
+      <ul class="plinks">${linked || `<li style="color:var(--dim)">${esc(t('notLinked'))}</li>`}</ul></div>
     ${extActions}`;
-  $('#drawerMd').textContent = '加载 SKILL.md…';
+  $('#drawerMd').textContent = t('loadingMd');
   $('#drawer').showModal();
   try {
     $('#drawerMd').textContent = await (await api(`/api/skill/${name}/skillmd`)).text();
   } catch (e) {
-    $('#drawerMd').textContent = '读取失败：' + e.message;
+    $('#drawerMd').textContent = t('readFail') + e.message;
   }
 }
 
@@ -534,10 +707,15 @@ function unlinkBody(ds, name){
 }
 
 const actions = {
-  'refresh': () => getState().catch(e => banner('刷新失败：' + e.message)),
+  'refresh': () => getState().catch(e => banner(t('refreshFail') + e.message)),
   'doctor': () => run('doctor', '/api/doctor'),
   'gen': () => run('gen-packages', '/api/gen-packages'),
   'sync': () => run('sync-external', '/api/external/sync', {}),
+  'lang-toggle': () => {
+    lang = lang === 'zh' ? 'en' : 'zh';
+    localStorage.setItem('skillsUiLang', lang);
+    applyLang();
+  },
   'health-toggle': () => {
     const h = $('#healthOut');
     h.style.display = h.style.display === 'block' ? 'none' : 'block';
@@ -558,13 +736,13 @@ const actions = {
   'link-selected': () => {
     const items = [...sel];
     if (!items.length) return;
-    const t = $('#linkTarget').value;
+    const t2 = $('#linkTarget').value;
     const body = {items, force: $('#linkForce').checked};
-    if (t === '__global__') body.global = true;
-    else if (t === '__new__'){
+    if (t2 === '__global__') body.global = true;
+    else if (t2 === '__new__'){
       body.target = $('#newPath').value.trim();
-      if (!body.target) return alert('请输入目标项目的绝对路径');
-    } else body.target = t;
+      if (!body.target) return alert(t('needTargetPath'));
+    } else body.target = t2;
     run('link → ' + (body.global ? 'GLOBAL' : base(body.target)), '/api/link', body)
       .then(res => { if (res && res.exitCode === 0){ sel.clear(); renderSkills(); } });
   },
@@ -577,14 +755,14 @@ const actions = {
   'prune-proj': el => confirmViaDryRun('prune ' + base(el.dataset.proj),
                                        '/api/prune', {target: el.dataset.proj}),
   'prune-global': () => confirmViaDryRun('prune GLOBAL', '/api/prune', {global: true}),
-  'prune-all': () => confirmViaDryRun('prune-all（全部项目）', '/api/prune-all', {}),
-  'dereg': el => showModal('取消注册项目',
-      `将从 links.txt 移除：\n${el.dataset.proj}\n\n（不会删除项目里已有的链接，只是 prune-all 不再管它）`,
+  'prune-all': () => confirmViaDryRun(t('pruneAllLabel'), '/api/prune-all', {}),
+  'dereg': el => showModal(t('deregTitle'),
+      t('deregText', {p: el.dataset.proj}),
       () => run('deregister ' + base(el.dataset.proj), '/api/register',
                 {paths: [el.dataset.proj], remove: true})),
   'register-submit': () => {
     const p = $('#regPath').value.trim();
-    if (!p) return alert('请输入项目绝对路径');
+    if (!p) return alert(t('needProjPath'));
     run('register ' + base(p), '/api/register', {paths: [p]})
       .then(res => { if (res && res.exitCode === 0) $('#regPath').value = ''; });
   },
@@ -603,14 +781,14 @@ const actions = {
     };
     if ($('#extName').value.trim()) body.name = $('#extName').value.trim();
     if ($('#extRef').value.trim()) body.ref = $('#extRef').value.trim();
-    if (!body.repo || !body.skillPath) return alert('repo 和 skill 路径必填');
+    if (!body.repo || !body.skillPath) return alert(t('needRepoPath'));
     $('#extDialog').close();
     run('add-external ' + (body.name || body.skillPath), '/api/external/add', body);
   },
   'ext-remove': el => {
     $('#drawer').close();
-    showModal('移除 External Skill',
-      `将移除 ${el.dataset.name}：删除 store 符号链接、external.json 条目和 .gitignore 行。\n本地 clone 不会被删除。`,
+    showModal(t('extRemoveTitle'),
+      t('extRemoveText', {name: el.dataset.name}),
       () => run('remove-external ' + el.dataset.name,
                 '/api/external/remove', {names: [el.dataset.name]}));
   },
@@ -663,10 +841,11 @@ attachComplete($('#regPath'));
 
 /* ---------- boot ---------- */
 
+applyLang();
 if (!token){
-  banner('缺少访问令牌：请通过 scripts/ui/serve.sh 打开本页面（URL 需带 #t=<token>）。');
+  banner(t('noToken'));
 } else {
-  getState().catch(e => banner('加载失败：' + e.message));
+  getState().catch(e => banner(t('loadFail') + e.message));
   // pick up changes made from the CLI while the window was in the background
   window.addEventListener('focus', () => { if (!busy) getState().catch(() => {}); });
 }
