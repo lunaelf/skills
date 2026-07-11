@@ -6,6 +6,9 @@
 # Local Claude Code settings (personal, not shared)
 .claude/settings.local.json
 
+# Symlink farm npx skills generates so Claude Code sees the store's skills here
+.claude/skills/
+
 # Local registry of projects that linked skills (machine-specific abs paths)
 links.txt
 
