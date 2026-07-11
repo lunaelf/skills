@@ -374,14 +374,14 @@ const tailGroups = ['authored', 'external', 'orphan'];  // non-package groups, l
 
 function renderSkills(){
   sel = new Set([...sel].filter(n => state.store.skills.some(s => s.name === n)));
-  // with an active search/filter, open everything so the matches are visible
-  const forceOpen = !!($('#q').value.trim() || $('#srcFilter').value || $('#pkgFilter').value);
   const groups = new Map();
   for (const s of visibleSkills()){
     const k = skillGroup(s);
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(s);
   }
+  // a text search must reveal its matches; a filter narrowed to one group may as well show it
+  const forceOpen = !!$('#q').value.trim() || groups.size === 1;
   const rank = k => (tailGroups.includes(k) ? '1' + tailGroups.indexOf(k) : '0' + k);
   const html = [...groups.keys()].sort((a, b) => rank(a).localeCompare(rank(b))).map(k => {
     const members = groups.get(k);
