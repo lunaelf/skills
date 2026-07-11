@@ -20,6 +20,8 @@ button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
 button.primary:hover{opacity:.9;color:#fff}
 button.danger:hover{border-color:var(--err);color:var(--err)}
 button:disabled{opacity:.45;cursor:default;pointer-events:none}
+body.busy button{pointer-events:none;opacity:.45}
+body.busy button.safe{pointer-events:auto;opacity:1}
 input,select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:6px;
              background:var(--card);color:var(--fg)}
 input:focus,select:focus{outline:none;border-color:var(--acc)}
@@ -60,6 +62,7 @@ td.name:hover{color:var(--acc)}
 tr.grouphead td{background:#f4f6fa}
 td.glabel{cursor:pointer;user-select:none}
 td.glabel:hover{color:var(--acc)}
+td.glabel:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
 .gcaret{display:inline-block;width:14px;font-size:11px;color:var(--dim)}
 .gcount{font-size:12px;color:var(--dim);margin-left:6px;font-weight:400}
 .desc{font-size:12px;color:var(--dim);font-weight:400;max-width:340px;overflow:hidden;
@@ -189,7 +192,7 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
   <h3 id="modalTitle"></h3>
   <pre id="modalPre"></pre>
   <menu>
-    <button data-action="modal-cancel">取消</button>
+    <button class="safe" data-action="modal-cancel">取消</button>
     <button class="primary" data-action="modal-ok" id="modalOkBtn">确认执行</button>
   </menu>
 </dialog>
@@ -206,7 +209,7 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
     <input id="extRef"></div>
   <label><input type="checkbox" id="extForce"> force（替换已存在的符号链接）</label>
   <menu>
-    <button data-action="ext-cancel">取消</button>
+    <button class="safe" data-action="ext-cancel">取消</button>
     <button class="primary" data-action="ext-submit">添加</button>
   </menu>
 </dialog>
@@ -214,7 +217,7 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
 <dialog id="drawer">
   <div style="display:flex;align-items:center;gap:8px">
     <h3 id="drawerTitle" style="flex:1;margin:0"></h3>
-    <button data-action="drawer-close">关闭</button>
+    <button class="safe" data-action="drawer-close">关闭</button>
   </div>
   <div id="drawerBody"></div>
   <pre id="drawerMd">加载 SKILL.md…</pre>
@@ -266,6 +269,7 @@ function logStart(label, res){
       <span class="badge b-warn logstat">运行中…</span>
     </div><pre class="logbody"></pre>`;
   $('#log').prepend(el);
+  while ($('#log').children.length > 50) $('#log').lastChild.remove();
   return el;
 }
 function logFinish(el, res){
@@ -285,8 +289,9 @@ function logFail(el, msg){
 }
 
 async function run(label, path, body){
-  if (busy){ alert('有操作正在执行，请稍候'); return null; }
+  if (busy){ banner('有操作正在执行，请稍候'); return null; }
   busy = true;
+  document.body.classList.add('busy');   // grey out mutation buttons; .safe ones stay usable
   const el = logStart(label);
   try {
     const res = await (await api(path, {method:'POST', body: JSON.stringify(body || {})})).json();
@@ -296,7 +301,7 @@ async function run(label, path, body){
   } catch (e) {
     logFail(el, e.message);
     return null;
-  } finally { busy = false; }
+  } finally { busy = false; document.body.classList.remove('busy'); }
 }
 
 function showModal(title, text, fn){
@@ -390,18 +395,29 @@ function renderSkills(){
   const html = [...groups.keys()].sort((a, b) => rank(a).localeCompare(rank(b))).map(k => {
     const members = groups.get(k);
     const open = forceOpen || !foldedGroups.has(k);
+    const picked = members.filter(s => sel.has(s.name)).length;
     const title = tailGroups.includes(k)
       ? `<span class="badge b-${k}">${k}</span>` : `<b>${esc(k)}</b>`;
     return `<tr class="grouphead">
       <td><input type="checkbox" class="gpick" data-group="${esc(k)}"
-           ${members.every(s => sel.has(s.name)) ? 'checked' : ''}></td>
-      <td colspan="3" class="glabel" data-action="group-toggle" data-group="${esc(k)}">
+           ${picked === members.length ? 'checked' : ''}></td>
+      <td colspan="3" class="glabel" tabindex="0" data-action="group-toggle" data-group="${esc(k)}">
         <span class="gcaret">${open ? '▾' : '▸'}</span>${title}
-        <span class="gcount">${members.length} 个 skill</span></td>
+        <span class="gcount">${picked ? `${picked}/${members.length} 已选` : `${members.length} 个 skill`}</span></td>
     </tr>` + (open ? members.map(skillRow).join('') : '');
   }).join('');
   $('#skillsBody').innerHTML = html ||
     '<tr><td colspan="4" style="color:var(--dim)">没有匹配的 skill</td></tr>';
+  for (const cb of document.querySelectorAll('.gpick')){   // indeterminate is a property, not an attribute
+    const members = groups.get(cb.dataset.group) || [];
+    const picked = members.filter(s => sel.has(s.name)).length;
+    cb.indeterminate = picked > 0 && picked < members.length;
+  }
+  const all = [...groups.values()].flat();
+  const pickedAll = all.filter(s => sel.has(s.name)).length;
+  const sa = $('#selAll');
+  sa.checked = all.length > 0 && pickedAll === all.length;
+  sa.indeterminate = pickedAll > 0 && pickedAll < all.length;
   $('#nonSkillLine').textContent = state.store.nonSkillDirs.length
     ? '忽略（无 SKILL.md）：' + state.store.nonSkillDirs.join('、') : '';
   renderLinkBar();
@@ -496,11 +512,11 @@ async function openDrawer(name){
 
 /* ---------- path autocomplete ---------- */
 
-let compTimer = null;
 function attachComplete(input){
+  let timer = null;   // per-input, so the two path fields don't cancel each other
   input.addEventListener('input', () => {
-    clearTimeout(compTimer);
-    compTimer = setTimeout(async () => {
+    clearTimeout(timer);
+    timer = setTimeout(async () => {
       try {
         const r = await (await api('/api/complete-path?prefix=' +
                                    encodeURIComponent(input.value))).json();
@@ -573,6 +589,8 @@ const actions = {
       .then(res => { if (res && res.exitCode === 0) $('#regPath').value = ''; });
   },
   'ext-open': el => {
+    for (const id of ['extRepo', 'extPath', 'extName', 'extRef']) $('#' + id).value = '';
+    $('#extForce').checked = false;
     if (el.dataset.name) $('#extName').value = el.dataset.name;
     $('#extDialog').showModal();
   },
@@ -612,6 +630,16 @@ document.addEventListener('toggle', e => {
     d.open ? expanded.add(d.dataset.key) : expanded.delete(d.dataset.key);
 }, true);
 
+// keyboard access for the group headers (plain td, unlike the projects' native <details>)
+document.addEventListener('keydown', e => {
+  const el = e.target;
+  if ((e.key === 'Enter' || e.key === ' ') && el.matches?.('td.glabel')){
+    e.preventDefault();
+    actions['group-toggle'](el);
+    document.querySelector(`td.glabel[data-group="${CSS.escape(el.dataset.group)}"]`)?.focus();
+  }
+});
+
 document.addEventListener('change', e => {
   if (e.target.classList.contains('pick')){
     e.target.checked ? sel.add(e.target.dataset.name) : sel.delete(e.target.dataset.name);
@@ -639,6 +667,8 @@ if (!token){
   banner('缺少访问令牌：请通过 scripts/ui/serve.sh 打开本页面（URL 需带 #t=<token>）。');
 } else {
   getState().catch(e => banner('加载失败：' + e.message));
+  // pick up changes made from the CLI while the window was in the background
+  window.addEventListener('focus', () => { if (!busy) getState().catch(() => {}); });
 }
 </script>
 </body>
