@@ -227,7 +227,7 @@ const token = new URLSearchParams(location.hash.slice(1)).get('t') || '';
 let state = null;
 let sel = new Set();
 const expanded = new Set();   // project card keys the user unfolded; survives re-render
-const openGroups = new Set(); // skill groups (package/source) the user unfolded
+const foldedGroups = new Set(); // skill groups (package/source) the user folded
 let busy = false;
 let modalFn = null;
 
@@ -389,7 +389,7 @@ function renderSkills(){
   const rank = k => (tailGroups.includes(k) ? '1' + tailGroups.indexOf(k) : '0' + k);
   const html = [...groups.keys()].sort((a, b) => rank(a).localeCompare(rank(b))).map(k => {
     const members = groups.get(k);
-    const open = forceOpen || openGroups.has(k);
+    const open = forceOpen || !foldedGroups.has(k);
     const title = tailGroups.includes(k)
       ? `<span class="badge b-${k}">${k}</span>` : `<b>${esc(k)}</b>`;
     return `<tr class="grouphead">
@@ -532,7 +532,7 @@ const actions = {
   },
   'group-toggle': el => {
     const k = el.dataset.group;
-    openGroups.has(k) ? openGroups.delete(k) : openGroups.add(k);
+    foldedGroups.has(k) ? foldedGroups.delete(k) : foldedGroups.add(k);
     renderSkills();
   },
   'open-skill': el => openDrawer(el.dataset.name),
