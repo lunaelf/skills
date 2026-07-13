@@ -174,6 +174,7 @@ if command -v python3 >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
   t   "tilde expanded in links.txt" grep -qxF "$UTD" "$R/links.txt"
   t   "unlink via api"      sh -c "curl -sf --max-time 30 -X POST -H 'X-Auth-Token: $UT' -H 'Content-Type: application/json' -d '{\"target\":\"$UIP\",\"items\":[\"tdd\"]}' '${UIURL}api/unlink' | grep -q '\"exitCode\": 0'"
   tn  "api link removed"    test -L "$UIP/.agents/skills/tdd"
+  t   "prune-all -g via api" sh -c "curl -sf --max-time 30 -X POST -H 'X-Auth-Token: $UT' -H 'Content-Type: application/json' -d '{\"dryRun\":true,\"global\":true}' '${UIURL}api/prune-all' | grep -q '\"-g\"'"
   mkdir -p "$R/.agents/skills/uidesc"   # fixture: YAML block-scalar description
   printf -- '---\nname: uidesc\ndescription: |\n  block line one\n  block line two\n---\n' > "$R/.agents/skills/uidesc/SKILL.md"
   t   "block-scalar description parsed" sh -c "curl -sf --max-time 30 -H 'X-Auth-Token: $UT' '${UIURL}api/state' | grep -q 'block line one block line two'"

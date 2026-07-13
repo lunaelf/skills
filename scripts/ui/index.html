@@ -34,6 +34,9 @@ header h1{font-size:16px;margin:0 6px 0 0}
 #banner{display:none;padding:8px 16px;background:#fef2f2;color:var(--err);
         border-bottom:1px solid #fecaca}
 
+.btngroup{display:flex;align-items:center;gap:6px}
+.hopt{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim);white-space:nowrap}
+
 .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;white-space:nowrap}
 .b-ok{background:#dcfce7;color:var(--ok)} .b-err{background:#fee2e2;color:var(--err)}
 .b-warn{background:#fef3c7;color:var(--warn)}
@@ -100,7 +103,7 @@ details[open]>summary.cardhead::before{content:'▾'}
 .plinks .lname{flex:1;word-break:break-all}
 .cardfoot{display:flex;gap:8px;margin-top:8px}
 .rowform{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
-.rowform input{flex:1;min-width:200px}
+.rowform>input{flex:1;min-width:200px}
 
 #log{flex:1;overflow:auto;min-height:0}
 #log:empty::after{content:attr(data-empty);color:var(--dim);font-size:12px}
@@ -138,7 +141,10 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
   <span class="spacer"></span>
   <button data-action="doctor" data-i18n="btnDoctor"></button>
   <button data-action="gen" id="btnGen">Gen PACKAGES</button>
-  <button data-action="sync">Sync External ⟳</button>
+  <span class="btngroup">
+    <button data-action="sync">Sync External ⟳</button>
+    <label class="hopt"><input type="checkbox" id="syncNoPull"> <span data-i18n="syncNoPullLabel"></span></label>
+  </span>
   <button data-action="refresh" data-i18n="btnRefresh"></button>
   <button class="safe" id="langBtn" data-action="lang-toggle"></button>
 </header>
@@ -188,6 +194,7 @@ dialog menu{display:flex;justify-content:flex-end;gap:8px;margin:14px 0 0;paddin
       </div>
       <div class="rowform">
         <button class="danger" data-action="prune-all" data-i18n="pruneAllBtn"></button>
+        <label class="hopt"><input type="checkbox" id="pruneAllG"> <span data-i18n="pruneAllGLabel"></span></label>
       </div>
     </aside>
     <section class="pane" id="logPane">
@@ -267,6 +274,8 @@ const I18N = {
     regPathPh: '注册新项目：/绝对路径 或 ~/…（可补全）',
     regBtn: '注册项目',
     pruneAllBtn: 'Prune All（全部项目）',
+    pruneAllGLabel: '连同 GLOBAL',
+    syncNoPullLabel: '不拉更新',
     logTitle: '活动日志',
     logEmpty: '还没有操作；每次操作的脚本输出会显示在这里',
     cancel: '取消',
@@ -342,6 +351,8 @@ const I18N = {
     regPathPh: 'Register a project: /absolute path or ~/… (autocompletes)',
     regBtn: 'Register',
     pruneAllBtn: 'Prune All (every project)',
+    pruneAllGLabel: 'include GLOBAL',
+    syncNoPullLabel: 'no pull',
     logTitle: 'Activity log',
     logEmpty: 'No operations yet — each action’s script output will appear here',
     cancel: 'Cancel',
@@ -723,7 +734,11 @@ const actions = {
   'refresh': () => getState().catch(e => banner(t('refreshFail') + e.message)),
   'doctor': () => run('doctor', '/api/doctor'),
   'gen': () => run('gen-packages', '/api/gen-packages'),
-  'sync': () => run('sync-external', '/api/external/sync', {}),
+  'sync': () => {
+    const np = $('#syncNoPull').checked;
+    run('sync-external' + (np ? ' --no-pull' : ''), '/api/external/sync',
+        np ? {noPull: true} : {});
+  },
   'lang-toggle': () => {
     lang = lang === 'zh' ? 'en' : 'zh';
     localStorage.setItem('skillsUiLang', lang);
@@ -768,7 +783,11 @@ const actions = {
   'prune-proj': el => confirmViaDryRun('prune ' + base(el.dataset.proj),
                                        '/api/prune', {target: el.dataset.proj}),
   'prune-global': () => confirmViaDryRun('prune GLOBAL', '/api/prune', {global: true}),
-  'prune-all': () => confirmViaDryRun(t('pruneAllLabel'), '/api/prune-all', {}),
+  'prune-all': () => {
+    const g = $('#pruneAllG').checked;
+    confirmViaDryRun(t('pruneAllLabel') + (g ? ' + GLOBAL' : ''), '/api/prune-all',
+                     g ? {global: true} : {});
+  },
   'dereg': el => showModal(t('deregTitle'),
       t('deregText', {p: el.dataset.proj}),
       () => run('deregister ' + base(el.dataset.proj), '/api/register',
