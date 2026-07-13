@@ -13,8 +13,9 @@
 ## mattpocock/skills
 
 - 来源类型：github
-- skill（17 个）：
+- skill（21 个）：
   - `ask-matt`
+  - `code-review`
   - `codebase-design`
   - `diagnosing-bugs`
   - `domain-modeling`
@@ -22,14 +23,17 @@
   - `grill-with-docs`
   - `grilling`
   - `handoff`
+  - `implement`
   - `improve-codebase-architecture`
   - `prototype`
+  - `research`
   - `setup-matt-pocock-skills`
   - `tdd`
   - `teach`
-  - `to-issues`
-  - `to-prd`
+  - `to-spec`
+  - `to-tickets`
   - `triage`
+  - `wayfinder`
   - `writing-great-skills`
 
 ## microsoft/playwright-cli
