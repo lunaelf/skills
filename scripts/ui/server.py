@@ -87,11 +87,20 @@ def skill_description(skill_dir):
         return None
     if not lines or lines[0].strip() != '---':
         return None
-    for line in lines[1:80]:
+    for i, line in enumerate(lines[1:80], 1):
         if line.strip() == '---':
             break
         if line.startswith('description:'):
-            return line.split(':', 1)[1].strip().strip('"\'') or None
+            val = line.split(':', 1)[1].strip()
+            if val.rstrip('+-') in ('|', '>'):  # YAML block scalar: text sits on the indented lines below
+                parts = []
+                for cont in lines[i + 1:i + 40]:
+                    if cont.strip() == '---' or (cont and not cont[0].isspace()):
+                        break
+                    if cont.strip():
+                        parts.append(cont.strip())
+                return ' '.join(parts) or None
+            return val.strip('"\'') or None
     return None
 
 
