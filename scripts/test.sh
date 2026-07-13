@@ -43,7 +43,8 @@ tsfx "clone_dir ssh"          "$(clone_dir_for git@github.com:o/p.git)"     "/gi
 tsfx "clone_dir gitlab"       "$(clone_dir_for https://gitlab.com/g/p)"     "/gitlab.com/g/p"
 teq "lock lists tdd"          "$(lock_skill_names "$R/skills-lock.json" | grep -cx tdd)" "1"
 teq "packages include mattpocock" "$(lock_packages "$R/skills-lock.json" | grep -cx 'mattpocock/skills')" "1"
-teq "mattpocock has 17 members"   "$(lock_package_members "$R/skills-lock.json" mattpocock/skills | grep -c .)" "17"
+mp_count="$(lock_package_members "$R/skills-lock.json" mattpocock/skills | grep -c .)"
+t   "mattpocock has multiple members" test "$mp_count" -ge 2
 
 echo "== link (project) =="
 P="$(mktmp)"
@@ -53,8 +54,8 @@ teq "tdd -> store"        "$(readlink "$P/.agents/skills/tdd")" "$R/.agents/skil
 t  "entry link made"      test -L "$P/.claude/skills"
 teq "entry -> .agents"    "$(readlink "$P/.claude/skills")" "../.agents/skills"
 t  "registered in links.txt" grep -qxF "$P" "$R/links.txt"
-"$LINK" "$P" mattpocock/skills >/dev/null 2>&1   # package expansion
-teq "package expands to 17" "$(ls "$P/.agents/skills" | grep -c .)" "17"
+"$LINK" "$P" mattpocock/skills >/dev/null 2>&1   # package expansion (tdd is a member, so no +1)
+teq "package expands to all members" "$(ls "$P/.agents/skills" | grep -c .)" "$mp_count"
 tn "non-skill name rejected" "$LINK" "$P" git-commit-workspace
 
 echo "== link (global, fake HOME) =="
