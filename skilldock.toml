@@ -1,4 +1,7 @@
-authored = ["git-commit"]
+authored = [
+    "git-commit",
+    "spring-boot-cicd",
+]
 
 [[vendored]]
 repo = "github.com/Doist/todoist-cli"
