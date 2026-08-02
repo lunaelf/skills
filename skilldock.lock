@@ -1,0 +1,164 @@
+[[repo]]
+repo = "github.com/Doist/todoist-cli"
+url = "https://github.com/Doist/todoist-cli.git"
+resolved = "8a8849da4d9a9b63488a6e4fa83d39113da234f5"
+
+[[repo.skill]]
+name = "todoist-cli"
+path = "skills/todoist-cli"
+hash = "sha256:d15fe89f33e8b1b12f0e97e2f2b7c19b2ce4c2a69b34da843876d9a268825d62"
+
+[[repo]]
+repo = "github.com/KKKKhazix/khazix-skills"
+url = "https://github.com/KKKKhazix/khazix-skills.git"
+resolved = "f430c4b11eb7ce715d77768ff787855b7a025187"
+
+[[repo.skill]]
+name = "hv-analysis"
+path = "hv-analysis"
+hash = "sha256:d7aeac5b5a38f4bac4b481352a15a51d3f23bd1dcf1fda4eea790d5e1a5f813a"
+
+[[repo]]
+repo = "github.com/blader/humanizer"
+url = "https://github.com/blader/humanizer.git"
+resolved = "523374dee72d67c7b2b5f858ea0094ffda49c3ac"
+
+[[repo.skill]]
+name = "humanizer"
+path = "."
+hash = "sha256:d5c24c8f5144846176360d39a97bf3319f194ee8813261da3841300ff5334096"
+
+[[repo]]
+repo = "github.com/mattpocock/skills"
+url = "https://github.com/mattpocock/skills.git"
+resolved = "2ab958093e83e0ec752e6c1c5932da465bf23e0c"
+
+[[repo.skill]]
+name = "ask-matt"
+path = "skills/engineering/ask-matt"
+hash = "sha256:9d85423aa7d178ddf12760dae491f4bab728709dd68d944d7bd7af5f36057361"
+
+[[repo.skill]]
+name = "code-review"
+path = "skills/engineering/code-review"
+hash = "sha256:b0db00d70ad67fe0aa0885ddb39796b5ba2ec57446785f08b2b2219e82f3b2b0"
+
+[[repo.skill]]
+name = "codebase-design"
+path = "skills/engineering/codebase-design"
+hash = "sha256:f212a5e091ec22c615a1a3077a8bbeb4ea78ee73e90f9f6ebad1f644bb8ec23d"
+
+[[repo.skill]]
+name = "diagnosing-bugs"
+path = "skills/engineering/diagnosing-bugs"
+hash = "sha256:cf4da5663e4b2247d4fd97d84bcbf6274b3f802a5fdf667913801977388f436b"
+
+[[repo.skill]]
+name = "domain-modeling"
+path = "skills/engineering/domain-modeling"
+hash = "sha256:2c84328db4f77b25d2b9dcc705ca882def304d145eaab860b39a80d897ef132d"
+
+[[repo.skill]]
+name = "grill-me"
+path = "skills/productivity/grill-me"
+hash = "sha256:0b27b013b9907cd59f8e52d5f64522e9df2f10f3cec268519504273ae2c859d4"
+
+[[repo.skill]]
+name = "grill-with-docs"
+path = "skills/engineering/grill-with-docs"
+hash = "sha256:2b1852a44fb269f9c13c8b3d21df0968b1dec7d6195c868801f7a401ea9e8481"
+
+[[repo.skill]]
+name = "grilling"
+path = "skills/productivity/grilling"
+hash = "sha256:b276457c88776646c24dba013de0c529d6a582acdd10ea9607b32dc4f249fbd8"
+
+[[repo.skill]]
+name = "handoff"
+path = "skills/productivity/handoff"
+hash = "sha256:38cfb4bc09c06d7e767f6a86110d2ce9b1968bde813c040001fd134a0c841000"
+
+[[repo.skill]]
+name = "implement"
+path = "skills/engineering/implement"
+hash = "sha256:2b06424d454de59c6eaf9fe5cf2f5e99ebdaf50025b351e817f4748c6440e80f"
+
+[[repo.skill]]
+name = "improve-codebase-architecture"
+path = "skills/engineering/improve-codebase-architecture"
+hash = "sha256:591c486edf3e1d1a399dcf5d24bfa41c3059ff0a8ac3d259da86bcef2fff5081"
+
+[[repo.skill]]
+name = "prototype"
+path = "skills/engineering/prototype"
+hash = "sha256:d3c6da1854bdccc397297aae110947fca949e0b0f101a025387d5889c6b9ef3f"
+
+[[repo.skill]]
+name = "research"
+path = "skills/engineering/research"
+hash = "sha256:d9cf131d38a42ba6ccdcedc1917e9dbf15abef5f480bb8b3aa1bf25ad8fdf89d"
+
+[[repo.skill]]
+name = "resolving-merge-conflicts"
+path = "skills/engineering/resolving-merge-conflicts"
+hash = "sha256:d707225162b5e91fb5588b23e74fb445f740db3a817e1b3708205a3c62042271"
+
+[[repo.skill]]
+name = "setup-matt-pocock-skills"
+path = "skills/engineering/setup-matt-pocock-skills"
+hash = "sha256:4b3c500876f7df669eff5378f8e97144a3d3af274ddd098150c5fc8ad75c9e62"
+
+[[repo.skill]]
+name = "tdd"
+path = "skills/engineering/tdd"
+hash = "sha256:a6985314009e2923a87ced87b08b780655fa984d90f5cedc49756431a13edfcc"
+
+[[repo.skill]]
+name = "teach"
+path = "skills/productivity/teach"
+hash = "sha256:b21820bfb5daf5cbf21ef6c76d6a18477b9ed2780a5989c3a4050d26f34c08bf"
+
+[[repo.skill]]
+name = "to-spec"
+path = "skills/engineering/to-spec"
+hash = "sha256:6a44444ddaf92912b63b2eda8a8e996d965214cb6fe3068f49b1a65ec37c4230"
+
+[[repo.skill]]
+name = "to-tickets"
+path = "skills/engineering/to-tickets"
+hash = "sha256:ace3d17b55affa0004d55e1da7f834d06f9c7513adf0fcf3002b6b032a983bf4"
+
+[[repo.skill]]
+name = "triage"
+path = "skills/engineering/triage"
+hash = "sha256:aa028653de8fd234f268953efff2a92ea7ea87d344538ed5cf5366b6b9e167ad"
+
+[[repo.skill]]
+name = "wayfinder"
+path = "skills/engineering/wayfinder"
+hash = "sha256:89de0b3ee25c6816da9224c7ede6782cea45d602b0fd59ff74ab54087b3922a9"
+
+[[repo.skill]]
+name = "writing-great-skills"
+path = "skills/productivity/writing-great-skills"
+hash = "sha256:93b3dc25670c4715a812ea0755a9b0bc983f8721571d61cede69af7c91af982d"
+
+[[repo]]
+repo = "github.com/op7418/Humanizer-zh"
+url = "https://github.com/op7418/Humanizer-zh.git"
+resolved = "91f3d394db8419c20d67ebe22a96cf8fee0a404b"
+
+[[repo.skill]]
+name = "humanizer-zh"
+path = "."
+hash = "sha256:a1a2e690de02a4194c1b50c8ce90ae4e460be70a5593dd5781f0c192ce4e546e"
+
+[[repo]]
+repo = "github.com/vercel-labs/skills"
+url = "https://github.com/vercel-labs/skills.git"
+resolved = "1164afa5f0e21ebd01e6fc11249759353f494ad1"
+
+[[repo.skill]]
+name = "find-skills"
+path = "skills/find-skills"
+hash = "sha256:89db2b0945c3116e6760ffc85f290fc932c41bbbd82814d92a06bc03f16eaff7"
